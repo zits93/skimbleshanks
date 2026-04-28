@@ -51,7 +51,7 @@ export const useRailStore = create<RailStore>((set, get) => ({
     dep: '수서',
     arr: '부산',
     date: new Date().toISOString().split('T')[0].replace(/-/g, ''),
-    time: '000000',
+    time: `${new Date().getHours().toString().padStart(2, '0')}0000`,
     adults: 1,
     children: 0,
     seniors: 0,
