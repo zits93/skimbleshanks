@@ -41,17 +41,17 @@ function App() {
     const autoTimerRef = useRef(null);
 
     // Settings State
-    const [cardNum, setCardNum] = useState(() => localStorage.getItem('srtgo_card_num') || '');
-    const [cardPw, setCardPw] = useState(() => localStorage.getItem('srtgo_card_pw') || '');
-    const [cardBirth, setCardBirth] = useState(() => localStorage.getItem('srtgo_card_birth') || '');
-    const [cardExp, setCardExp] = useState(() => localStorage.getItem('srtgo_card_exp') || '');
+    const [cardNum, setCardNum] = useState(() => localStorage.getItem('skimbleshanks_card_num') || '');
+    const [cardPw, setCardPw] = useState(() => localStorage.getItem('skimbleshanks_card_pw') || '');
+    const [cardBirth, setCardBirth] = useState(() => localStorage.getItem('skimbleshanks_card_birth') || '');
+    const [cardExp, setCardExp] = useState(() => localStorage.getItem('skimbleshanks_card_exp') || '');
 
-    const [apiBase, setApiBase] = useState(() => localStorage.getItem('srtgo_api_base') || 'http://localhost:8000/api');
-    const [apiKey, setApiKey] = useState(() => localStorage.getItem('srtgo_api_key') || 'srtgo-default-key');
+    const [apiBase, setApiBase] = useState(() => localStorage.getItem('skimbleshanks_api_base') || 'http://localhost:8000/api');
+    const [apiKey, setApiKey] = useState(() => localStorage.getItem('skimbleshanks_api_key') || 'skimbleshanks-default-key');
     const [devMode, setDevMode] = useState(false);
 
-    const [tgToken, setTgToken] = useState(() => localStorage.getItem('srtgo_tg_token') || '');
-    const [tgChatId, setTgChatId] = useState(() => localStorage.getItem('srtgo_tg_chat_id') || '');
+    const [tgToken, setTgToken] = useState(() => localStorage.getItem('skimbleshanks_tg_token') || '');
+    const [tgChatId, setTgChatId] = useState(() => localStorage.getItem('skimbleshanks_tg_chat_id') || '');
 
     const [loading, setLoading] = useState(false);
     const [toast, setToast] = useState(null);
@@ -59,8 +59,8 @@ function App() {
 
     const saveApiSettings = (e) => {
         e.preventDefault();
-        localStorage.setItem('srtgo_api_base', apiBase);
-        localStorage.setItem('srtgo_api_key', apiKey);
+        localStorage.setItem('skimbleshanks_api_base', apiBase);
+        localStorage.setItem('skimbleshanks_api_key', apiKey);
         showToast('API 설정이 저장되었습니다. 페이지를 새로고침하세요.', 'success');
     };
 
@@ -73,8 +73,8 @@ function App() {
                 body: JSON.stringify({ token: tgToken, chat_id: tgChatId })
             });
             if (res.ok) {
-                localStorage.setItem('srtgo_tg_token', tgToken);
-                localStorage.setItem('srtgo_tg_chat_id', tgChatId);
+                localStorage.setItem('skimbleshanks_tg_token', tgToken);
+                localStorage.setItem('skimbleshanks_tg_chat_id', tgChatId);
                 showToast('텔레그램 설정 완료 및 테스트 메시지 전송 성공!', 'success');
             } else {
                 const data = await res.json();
@@ -253,10 +253,10 @@ function App() {
 
     const saveCard = (e) => {
         e.preventDefault();
-        localStorage.setItem('srtgo_card_num', cardNum);
-        localStorage.setItem('srtgo_card_pw', cardPw);
-        localStorage.setItem('srtgo_card_birth', cardBirth);
-        localStorage.setItem('srtgo_card_exp', cardExp);
+        localStorage.setItem('skimbleshanks_card_num', cardNum);
+        localStorage.setItem('skimbleshanks_card_pw', cardPw);
+        localStorage.setItem('skimbleshanks_card_birth', cardBirth);
+        localStorage.setItem('skimbleshanks_card_exp', cardExp);
         showToast('카드 정보가 브라우저에 저장되었습니다.', 'success');
     };
 
@@ -268,7 +268,7 @@ function App() {
             {modal && <Modal {...modal} onClose={() => setModal(null)} />}
 
             <header>
-                <h1>SRT<span>go</span></h1>
+                <h1>Skimble<span>shanks</span> 🐾</h1>
             </header>
 
             <div className="container">
@@ -276,7 +276,7 @@ function App() {
                     <div className="glass login-card">
                         <form onSubmit={handleLogin}>
                             <div className="input-group">
-                                <label style={{fontSize: '1rem', marginBottom: '0.8rem'}}>SRT 아이디</label>
+                                <label style={{fontSize: '1rem', marginBottom: '0.8rem'}}>열차 서비스 아이디</label>
                                 <input value={userId} onChange={e=>setUserId(e.target.value)} placeholder="아이디 입력" required/>
                             </div>
                             <div className="input-group">

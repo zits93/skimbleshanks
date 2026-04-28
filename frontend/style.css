@@ -1,16 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
 
 :root {
-    --primary: #8b5cf6;
-    --primary-glow: rgba(139, 92, 246, 0.4);
-    --secondary: #ec4899;
-    --secondary-glow: rgba(236, 72, 153, 0.4);
-    --accent: #06b6d4;
-    --bg-dark: #0f172a;
+    --primary: #f59e0b; /* Golden Amber - Skimble's Fur */
+    --primary-glow: rgba(245, 158, 11, 0.4);
+    --secondary: #ea580c; /* Deep Orange -Skimble's Tabby Stripes */
+    --secondary-glow: rgba(234, 88, 12, 0.4);
+    --accent: #fbbf24; /* Yellow Gold */
+    --bg-dark: #020617; /* Midnight Navy - The Night Mail */
     --text-main: #f8fafc;
     --text-muted: #94a3b8;
-    --glass-bg: rgba(255, 255, 255, 0.05);
-    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-bg: rgba(255, 255, 255, 0.03);
+    --glass-border: rgba(255, 255, 255, 0.08);
     --radius-lg: 2rem;
     --radius-md: 1.2rem;
 }
