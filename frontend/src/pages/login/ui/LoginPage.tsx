@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '../../../features/auth/model/authStore';
 import { useUiStore } from '../../../shared/api/uiStore';
-import { ApiSettings } from '../../../features/api-settings/ui/ApiSettings';
+import { ApiConnectionSettings } from '../../../features/api-settings/ui/ApiConnectionSettings';
 import { User, Terminal } from 'lucide-react';
 import '../../../app/style.css';
 
@@ -56,7 +56,7 @@ export default function LoginPage() {
                 </label>
             </div>
 
-            {devMode && <ApiSettings />}
+            {devMode && <ApiConnectionSettings />}
         </motion.div>
     );
 }

@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { SearchForm } from '../../../widgets/search-form/ui/SearchForm';
 import { TrainList } from '../../../widgets/train-list/ui/TrainList';
-import { ApiSettings } from '../../../features/api-settings/ui/ApiSettings';
+import { CardSettings } from '../../../features/api-settings/ui/CardSettings';
+import { TelegramSettings } from '../../../features/api-settings/ui/TelegramSettings';
 import { Settings, Search, Terminal } from 'lucide-react';
 import '../../../app/style.css';
 
@@ -43,17 +44,20 @@ export default function MainPage() {
                         <TrainList />
                     </div>
                 ) : (
-                    <div style={{ maxWidth: '600px', margin: '0 auto' }}>
-                        <ApiSettings />
-                        <div className="glass" style={{ marginTop: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 2rem', opacity: 0.8 }}>
-                            <span style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center' }}>
-                                <Terminal /> 개발자 모드
+                    <div style={{ maxWidth: '600px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                        <CardSettings />
+                        
+                        <div className="glass" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 2rem', opacity: 0.8 }}>
+                            <span style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <Terminal size={16} /> 개발자 모드
                             </span>
                             <label className="switch">
                                 <input type="checkbox" checked={devMode} onChange={e => setDevMode(e.target.checked)} />
                                 <span className="slider round"></span>
                             </label>
                         </div>
+
+                        {devMode && <TelegramSettings />}
                     </div>
                 )}
             </motion.div>
