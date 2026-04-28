@@ -62,7 +62,7 @@ function App() {
     // Auto Reserve State
     const [selectedTargets, setSelectedTargets] = useState<any[]>([]);
     const [autoReserveActive, setAutoReserveActive] = useState<boolean>(false);
-    const [autoPayActive, setAutoPayActive] = useState<boolean>(true);
+    const [autoPayActive] = useState<boolean>(true);
 
     const [autoReserveAttempts, setAutoReserveAttempts] = useState<number>(0);
     const [logs, setLogs] = useState<Log[]>([]);
