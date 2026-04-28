@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Toast } from '../shared/ui/Toast';
 import { Modal } from '../shared/ui/Modal';
@@ -34,10 +34,10 @@ function AppContent() {
     }, [checkConfig]);
 
     useEffect(() => {
-        const path = location.pathname.replace(import.meta.env.BASE_URL, '/');
-        if (!isLoggedIn && path !== '/login' && path !== 'login') {
+        const path = location.pathname;
+        if (!isLoggedIn && path !== '/login') {
             navigate('/login');
-        } else if (isLoggedIn && (path === '/login' || path === 'login')) {
+        } else if (isLoggedIn && path === '/login') {
             navigate('/');
         }
     }, [isLoggedIn, location.pathname, navigate]);
@@ -71,7 +71,8 @@ function AppContent() {
         let lastTime = 0;
         let position = 50;
         let frameAcc = 0;
-        const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
+        // Use relative path for public assets in JS to be safe with HashRouter
+        const base = import.meta.env.BASE_URL;
         
         const animate = (time: number) => {
             if (!lastTime) { lastTime = time; requestAnimationFrame(animate); return; }
@@ -100,7 +101,9 @@ function AppContent() {
             
             if (catRef.current) catRef.current.style.transform = `translateX(${position}px)`;
             if (framesRef.current) {
-                framesRef.current.style.backgroundImage = `url('${baseUrl}/cat/run_${frameIndex}.png')`;
+                // Absolute path from site root is safest if base is set correctly
+                const imgPath = `${base}cat/run_${frameIndex}.png`.replace(/\/+/g, '/');
+                framesRef.current.style.backgroundImage = `url('${imgPath}')`;
                 framesRef.current.style.transform = `scaleX(${directionRef.current})`;
             }
             
@@ -160,7 +163,7 @@ function AppContent() {
 
             <footer style={{ textAlign: 'center', padding: '3rem', opacity: 0.4, fontSize: '0.8rem' }}>
                 <a href="https://github.com/zits93/skimbleshanks" target="_blank" rel="noreferrer" style={{ color: 'inherit', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Globe size={14} /> GitHub Repository
+                    <Globe size={18} /> GitHub Repository
                 </a>
             </footer>
         </div>
@@ -169,8 +172,8 @@ function AppContent() {
 
 export default function App() {
     return (
-        <BrowserRouter basename={import.meta.env.BASE_URL}>
+        <HashRouter>
             <AppContent />
-        </BrowserRouter>
+        </HashRouter>
     );
 }

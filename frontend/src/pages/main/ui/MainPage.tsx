@@ -22,10 +22,10 @@ export default function MainPage() {
                         left: '0.4rem'
                     }}></div>
                     <button className={activeTab === 'search' ? 'active' : ''} onClick={() => setActiveTab('search')} style={{ width: '150px' }}>
-                        <Search /> 예매
+                        <Search size={20} /> 예매
                     </button>
                     <button className={activeTab === 'settings' ? 'active' : ''} onClick={() => setActiveTab('settings')} style={{ width: '150px' }}>
-                        <Settings /> 설정
+                        <Settings size={20} /> 설정
                     </button>
                 </div>
             </div>
