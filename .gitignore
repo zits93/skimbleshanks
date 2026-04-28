@@ -13,6 +13,10 @@ main.build/
 main.dist/
 develop-eggs/
 dist/
+frontend/dist/
+node_modules/
+.vite/
+*.tsbuildinfo
 downloads/
 eggs/
 .eggs/
