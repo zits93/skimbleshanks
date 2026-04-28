@@ -1,22 +1,25 @@
-# SRTgo: SRT Train Reservation Assistant
+# 🚂 Skimbleshanks: The Railway Cat
+![Mascot](/Users/seoheekim/.gemini/antigravity/brain/4e299f16-90a5-4629-b87f-cd13e9f9aa0d/skimbleshanks_mascot_1777350759747.png)
+
 [![CI](https://github.com/zits93/srtgo/actions/workflows/ci.yml/badge.svg)](https://github.com/zits93/srtgo/actions/workflows/ci.yml)
 ![Python Version](https://img.shields.io/badge/python-3.10+-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 ![Stars](https://img.shields.io/github/stars/zits93/srtgo?style=social)
 
-> [!WARNING]
-> 본 프로그램의 모든 상업적, 영리적 이용을 엄격히 금지합니다. 본 프로그램 사용에 따른 민형사상 책임을 포함한 모든 책임은 사용자에게 있으며, 본 프로그램의 개발자는 민형사상 책임을 포함한 어떠한 책임도 부담하지 않습니다. 본 프로그램을 내려받음으로써 모든 사용자는 위 사항에 이의 없이 동의하는 것으로 간주됩니다.
+> *"Nothing happens on the Northern Mail / If Skimbleshanks is not there"*
+
+**Skimbleshanks**는 고속열차(SRT/KTX) 예매를 완벽하게 관리하는 당신의 철도 도우미입니다. 뮤지컬 '캣츠'의 꼼꼼한 철도 고양이처럼, 당신이 잠든 사이에도 가장 빠른 길을 찾아 예매를 완료합니다.
 
 ---
 
 ## 🌟 주요 기능 (Features)
-- **SRT 예매 지원**: 터미널(CLI)과 웹 환경에서 SRT 열차를 간편하게 예매합니다.
-- **자동 예매 대기**: 매진된 열차를 주기적으로 확인하여 자리가 나는 즉시 자동으로 예약합니다.
-- **텔레그램 알림**: 예매 성공 시 설정된 텔레그램 봇으로 즉시 알림을 전송합니다.
-- **다양한 승객 옵션**: 어른/청소년, 어린이, 경로우대, 장애인 등 맞춤형 인원 설정이 가능합니다.
-- **자동 결제 기능**: 카드 정보를 사전에 등록하여 예매와 동시에 결제까지 완료할 수 있습니다.
-- **대화형 TUI 및 웹 GUI**: 터미널(CLI)과 브라우저(Web) 환경을 모두 지원합니다.
+- **완벽한 예매 관리**: 스킴블처럼 꼼꼼하게 열차 상황을 감시하여 예매를 성공시킵니다.
+- **자동 예매 대기**: 매진된 열차도 포기하지 않고 자리가 나는 즉시 낚아챕니다.
+- **텔레그램 알림**: 예매 성공 시 집사님(사용자)에게 즉시 알림을 보냅니다.
+- **다양한 승객 옵션**: 모든 연령층과 인원 설정을 완벽하게 지원합니다.
+- **자동 결제 기능**: 카드 정보를 안전하게 사용하여 예매와 동시에 결제까지 마칩니다.
+- **대화형 GUI**: 고양이처럼 친근하고 부드러운 웹 및 터미널 인터페이스를 제공합니다.
 
 ## 🚀 사용법 (Usage)
 
@@ -68,4 +71,5 @@ uvicorn src.api.app:app --host 0.0.0.0 --port 8000
 - `tests`: Pytest 기반 단위 및 통합 테스트
 
 ## 🤝 Acknowledgments
+- 본 프로젝트는 [SRTgo](https://github.com/zits93/srtgo) 프로젝트에서 포크되어 새로운 컨셉과 기능으로 재작성된 독립 프로젝트입니다. 원작자의 노고에 감사드립니다.
 - This project includes code from [SRT](https://github.com/ryanking13/SRT) by ryanking13 (MIT License) and [korail2](https://github.com/carpedm20/korail2) by carpedm20 (BSD License).

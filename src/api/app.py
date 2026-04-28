@@ -12,7 +12,7 @@ from src.services.logger import logger
 from src.adapters.rail import login_client, is_seat_available, SeatType
 
 
-app = FastAPI(title="SRTgo API")
+app = FastAPI(title="Skimbleshanks API")
 
 # Simple API Key from environment variable or default
 API_KEY = os.getenv("SRTGO_API_KEY")

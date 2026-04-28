@@ -3,11 +3,11 @@ requires = ["setuptools", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "srtgo"
+name = "skimbleshanks"
 authors = [
-    {name = "DKim", email = "lapis42@gmail.com"},
+    {name = "Seohee Kim"},
 ]
-description = "SRTgo: K-Train Reservation Helper"
+description = "Skimbleshanks: The Meticulous Railway Cat for K-Train Reservations"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT License"}
@@ -31,7 +31,7 @@ dynamic = ["version"]
 [tool.setuptools_scm]
 
 [project.urls]
-Homepage = "https://github.com/lapis42/srtgo"
+Homepage = "https://github.com/zits93/srtgo"
 
 [project.scripts]
-srtgo = "src.cli.main:srtgo"
+skimbleshanks = "src.cli.main:srtgo"
