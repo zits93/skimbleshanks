@@ -34,9 +34,10 @@ function AppContent() {
     }, [checkConfig]);
 
     useEffect(() => {
-        if (!isLoggedIn && location.pathname !== '/login') {
+        const path = location.pathname.replace(import.meta.env.BASE_URL, '/');
+        if (!isLoggedIn && path !== '/login' && path !== 'login') {
             navigate('/login');
-        } else if (isLoggedIn && location.pathname === '/login') {
+        } else if (isLoggedIn && (path === '/login' || path === 'login')) {
             navigate('/');
         }
     }, [isLoggedIn, location.pathname, navigate]);
@@ -70,6 +71,7 @@ function AppContent() {
         let lastTime = 0;
         let position = 50;
         let frameAcc = 0;
+        const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
         
         const animate = (time: number) => {
             if (!lastTime) { lastTime = time; requestAnimationFrame(animate); return; }
@@ -98,7 +100,7 @@ function AppContent() {
             
             if (catRef.current) catRef.current.style.transform = `translateX(${position}px)`;
             if (framesRef.current) {
-                framesRef.current.style.backgroundImage = `url('./cat/run_${frameIndex}.png')`;
+                framesRef.current.style.backgroundImage = `url('${baseUrl}/cat/run_${frameIndex}.png')`;
                 framesRef.current.style.transform = `scaleX(${directionRef.current})`;
             }
             
@@ -167,7 +169,7 @@ function AppContent() {
 
 export default function App() {
     return (
-        <BrowserRouter>
+        <BrowserRouter basename={import.meta.env.BASE_URL}>
             <AppContent />
         </BrowserRouter>
     );

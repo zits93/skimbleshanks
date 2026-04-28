@@ -4,6 +4,7 @@ import { useAuthStore } from '../../../features/auth/model/authStore';
 import { useUiStore } from '../../../shared/api/uiStore';
 import { ApiSettings } from '../../../features/api-settings/ui/ApiSettings';
 import { User, Terminal } from 'lucide-react';
+import '../../../app/style.css';
 
 export default function LoginPage() {
     const [password, setPassword] = useState('');
@@ -38,7 +39,7 @@ export default function LoginPage() {
                         <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="비밀번호 입력" required />
                     </div>
                     <button type="submit" className="btn-primary" disabled={loading} style={{ marginTop: '1rem' }}>
-                        <User size={18} style={{ marginRight: '8px' }} />
+                        <User />
                         {loading ? '로그인 중...' : '로그인'}
                     </button>
                 </form>
@@ -46,7 +47,7 @@ export default function LoginPage() {
             
             <div className="glass" style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 2rem', opacity: 0.8 }}>
                 <span style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center' }}>
-                    <Terminal size={18} style={{ marginRight: '8px' }} />
+                    <Terminal />
                     개발자 설정 (API)
                 </span>
                 <label className="switch">
