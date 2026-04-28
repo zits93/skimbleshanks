@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { Log } from '../types';
 
 interface LogViewerProps {

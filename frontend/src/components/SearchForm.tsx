@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { PassengerSelect } from './PassengerSelect';
 
 interface SearchFormProps {

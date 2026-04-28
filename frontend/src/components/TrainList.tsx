@@ -6,8 +6,6 @@ interface TrainListProps {
     selectedTargets: Target[];
     toggleTarget: (trainName: string, seatType: string) => void;
     bulkToggleTarget: (seatType: string) => void;
-    autoPayActive: boolean;
-    setAutoPayActive: (val: boolean) => void;
     autoReserveActive: boolean;
     autoReserveAttempts: number;
     startAutoReserve: () => void;
@@ -16,7 +14,7 @@ interface TrainListProps {
 }
 
 export function TrainList({ 
-    trains, selectedTargets, toggleTarget, bulkToggleTarget, autoPayActive, setAutoPayActive,
+    trains, selectedTargets, toggleTarget, bulkToggleTarget,
     autoReserveActive, autoReserveAttempts, startAutoReserve, stopAutoReserve,
     logs
 }: TrainListProps) {
@@ -41,10 +39,10 @@ export function TrainList({
         );
     }
 
-    const isSelected = (trainName, seatType) => 
+    const isSelected = (trainName: string, seatType: string) => 
         selectedTargets.some(x => x.train_name === trainName && x.seat_type === seatType);
 
-    const formatTime = (tm) => {
+    const formatTime = (tm: string) => {
         if (!tm || tm.length < 4) return '--:--';
         return `${tm.slice(0,2)}:${tm.slice(2,4)}`;
     };
