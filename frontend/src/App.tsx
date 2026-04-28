@@ -504,7 +504,6 @@ function App() {
                                 />
                                 <TrainList 
                                     trains={trains} selectedTargets={selectedTargets} toggleTarget={toggleTarget} bulkToggleTarget={bulkToggleTarget}
-                                    autoPayActive={autoPayActive} setAutoPayActive={setAutoPayActive}
                                     autoReserveActive={autoReserveActive} autoReserveAttempts={autoReserveAttempts}
                                     startAutoReserve={startAutoReserve} stopAutoReserve={stopAutoReserve}
                                     logs={logs}
