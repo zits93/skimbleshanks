@@ -1,11 +1,9 @@
 import { useEffect, useRef } from 'react';
-import { Log } from '../types';
+import { useLogStore } from '../store/logStore';
+import { Terminal } from 'lucide-react';
 
-interface LogViewerProps {
-    logs: Log[];
-}
-
-export function LogViewer({ logs }: LogViewerProps) {
+export function LogViewer() {
+    const { logs } = useLogStore();
     const scrollRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -20,7 +18,7 @@ export function LogViewer({ logs }: LogViewerProps) {
         <div className="log-viewer glass">
             <div className="log-header">
                 <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{filter: 'drop-shadow(0 0 5px rgba(96, 165, 250, 0.5))'}}><path d="m13 2-2 10h3l-2 10"/></svg>
+                    <Terminal size={16} color="#60a5fa" />
                     <span>실시간 작업 로그</span>
                 </div>
                 <span className="log-count">{logs.length} entries</span>

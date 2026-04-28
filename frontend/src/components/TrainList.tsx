@@ -1,23 +1,15 @@
-import { Train, Target, Log } from '../types';
+import { useRailStore } from '../store/railStore';
+import { useLogStore } from '../store/logStore';
 import { LogViewer } from './LogViewer';
+import { Play, Square, Info, Check } from 'lucide-react';
 
-interface TrainListProps {
-    trains: Train[];
-    selectedTargets: Target[];
-    toggleTarget: (trainName: string, seatType: string) => void;
-    bulkToggleTarget: (seatType: string) => void;
-    autoReserveActive: boolean;
-    autoReserveAttempts: number;
-    startAutoReserve: () => void;
-    stopAutoReserve: () => void;
-    logs: Log[];
-}
+export function TrainList() {
+    const { 
+        trains, selectedTargets, toggleTarget, bulkToggleTarget,
+        autoReserveActive, autoReserveAttempts, startAutoReserve, stopAutoReserve
+    } = useRailStore();
+    const { logs } = useLogStore();
 
-export function TrainList({ 
-    trains, selectedTargets, toggleTarget, bulkToggleTarget,
-    autoReserveActive, autoReserveAttempts, startAutoReserve, stopAutoReserve,
-    logs
-}: TrainListProps) {
     if (trains.length === 0) {
         return (
             <div className="results-panel">
@@ -66,7 +58,7 @@ export function TrainList({
                     </div>
                 </div>
                 
-                <div style={{display: 'flex', gap: '1rem', alignItems: 'center'}}>
+                <div style={{display: 'flex', alignItems: 'center', gap: '1rem', alignItems: 'center'}}>
                     {autoReserveActive ? (
                         <button className="btn-primary pulse-red" onClick={stopAutoReserve} style={{
                             background: 'linear-gradient(135deg, #ef4444, #b91c1c)', 
@@ -77,11 +69,19 @@ export function TrainList({
                             gap: '0.5rem',
                             width: 'auto'
                         }}>
-                            <span className="spinner"></span>
+                            <Square size={16} fill="currentColor" />
                             중지 ({autoReserveAttempts}회)
                         </button>
                     ) : (
-                        <button className="btn-primary" onClick={startAutoReserve} style={{padding: '0.6rem 1.5rem', borderRadius: '2rem', width: 'auto'}}>
+                        <button className="btn-primary" onClick={startAutoReserve} style={{
+                            padding: '0.6rem 1.5rem', 
+                            borderRadius: '2rem', 
+                            width: 'auto',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem'
+                        }}>
+                            <Play size={16} fill="currentColor" />
                             자동 예매 시작
                         </button>
                     )}
@@ -99,7 +99,7 @@ export function TrainList({
                 gap: '1rem',
                 animation: 'pulse-subtle 3s infinite'
             }}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                <Info size={24} color="var(--primary)" />
                 <div style={{fontSize: '0.95rem', color: 'rgba(255,255,255,0.8)', lineHeight: 1.5}}>
                     <strong style={{color: 'var(--primary)', display: 'block', marginBottom: '0.2rem'}}>💡 자동 예매 팁</strong>
                     매진된 좌석(<span style={{color: '#f87171'}}>RED</span>)을 클릭하여 대기 목록에 추가하세요. 
@@ -215,7 +215,10 @@ function SeatButton({ type, status, selected, onClick }: SeatButtonProps) {
                     gap: '0.2rem'
                 }}>
                     {selected ? (
-                        <><span>✓</span> 대기 중</>
+                        <>
+                            <Check size={10} strokeWidth={4} />
+                            <span>대기 중</span>
+                        </>
                     ) : (
                         <><span>+</span> 대기 신청</>
                     )}

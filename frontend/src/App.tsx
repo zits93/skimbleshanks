@@ -1,12 +1,17 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Toast } from './components/Toast';
 import { Modal } from './components/Modal';
 import { SearchForm } from './components/SearchForm';
 import { TrainList } from './components/TrainList';
-import { SettingsCard } from './components/SettingsCard';
-import { Log } from './types';
 import { ApiSettings } from './components/ApiSettings';
-import { apiFetch } from './api';
+import { useAuthStore } from './store/authStore';
+import { useRailStore } from './store/railStore';
+import { useUiStore } from './store/uiStore';
+import { Settings, Search, LogIn, Github, Terminal } from 'lucide-react';
+import './style.css';
+
+const STATIONS = ["수서", "동탄", "평택지제", "곡성", "공주", "광주송정", "구례구", "김천(구미)", "나주", "남원", "대구", "대전", "마산", "목포", "밀양", "부산", "서대구", "순천", "신경주", "여수EXPO", "여천", "오송", "울산(통도사)", "익산", "전주", "진영", "진주", "창원", "창원중앙", "천안아산", "포항"];
 
 interface Paw {
     id: number;
@@ -15,77 +20,36 @@ interface Paw {
     rotate: number;
 }
 
-interface ToastState {
-    message: string;
-    type: string;
-    key: number;
-}
+export default function App() {
+    const [activeTab, setActiveTab] = useState<'search' | 'settings'>('search');
+    const [devMode, setDevMode] = useState(false);
+    const [password, setPassword] = useState('');
+    const [paws, setPaws] = useState<Paw[]>([]);
 
-interface ModalState {
-    icon: string;
-    title: string;
-    message: string;
-    buttons: any[];
-}
+    const { isLoggedIn, userId, loading, setUserId, login, checkConfig } = useAuthStore();
+    const { autoReserveActive } = useRailStore();
+    const { showToast } = useUiStore();
 
-function App() {
-    const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
-    const [activeTab, setActiveTab] = useState<string>('search');
-    const [stationList] = useState<string[]>(["수서","동탄","평택지제","대전","동대구","부산","광주송정","목포"]);
-    
-    // Auth & Search State
-    const [userId, setUserId] = useState<string>('');
-    const [password, setPassword] = useState<string>('');
-    const [dep, setDep] = useState<string>('수서');
-    const [arr, setArr] = useState<string>('부산');
-    
-    // Initialize date and time with current values
-    const now = new Date();
-    const initialDate = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
-    const initialTime = `${String(now.getHours()).padStart(2, '0')}0000`;
-
-    const [date, setDate] = useState<string>(initialDate);
-    const [time, setTime] = useState<string>(initialTime);
-    
-    // Animation Refs
+    const trackRef = useRef<HTMLDivElement>(null);
     const catRef = useRef<HTMLDivElement>(null);
     const framesRef = useRef<HTMLDivElement>(null);
-    const trackRef = useRef<HTMLDivElement>(null);
-    const boostRef = useRef<number>(0);
-    const [adults, setAdults] = useState<number>(1);
-    const [children, setChildren] = useState<number>(0);
-    const [seniors, setSeniors] = useState<number>(0);
-    const [dis1to3, setDis1to3] = useState<number>(0);
-    const [dis4to6, setDis4to6] = useState<number>(0);
-    const [trains, setTrains] = useState<any[]>([]);
-    
-    // Auto Reserve State
-    const [selectedTargets, setSelectedTargets] = useState<any[]>([]);
-    const [autoReserveActive, setAutoReserveActive] = useState<boolean>(false);
-    const [autoPayActive] = useState<boolean>(true);
+    const boostRef = useRef(0);
+    const directionRef = useRef<number>(1);
 
-    const [autoReserveAttempts, setAutoReserveAttempts] = useState<number>(0);
-    const [logs, setLogs] = useState<Log[]>([]);
-    const autoTimerRef = useRef<any>(null);
+    useEffect(() => {
+        document.title = "Skimbleshanks Web GUI";
+        checkConfig();
+    }, [checkConfig]);
 
-    // Settings State
-    const [cardNum, setCardNum] = useState<string>(() => localStorage.getItem('skimbleshanks_card_num') || '');
-    const [cardPw, setCardPw] = useState<string>(() => localStorage.getItem('skimbleshanks_card_pw') || '');
-    const [cardBirth, setCardBirth] = useState<string>(() => localStorage.getItem('skimbleshanks_card_birth') || '');
-    const [cardExp, setCardExp] = useState<string>(() => localStorage.getItem('skimbleshanks_card_exp') || '');
-
-    const [apiBase, setApiBase] = useState<string>(() => localStorage.getItem('skimbleshanks_api_base') || 'http://localhost:8000/api');
-    const [apiKey, setApiKey] = useState<string>(() => localStorage.getItem('skimbleshanks_api_key') || 'skimbleshanks-default-key');
-    const [devMode, setDevMode] = useState<boolean>(false);
-
-    const [tgToken, setTgToken] = useState<string>(() => localStorage.getItem('skimbleshanks_tg_token') || '');
-    const [tgChatId, setTgChatId] = useState<string>(() => localStorage.getItem('skimbleshanks_tg_chat_id') || '');
-
-    const [loading, setLoading] = useState<boolean>(false);
-    const [toast, setToast] = useState<ToastState | null>(null);
-    const [modal, setModal] = useState<ModalState | null>(null);
-    const [paws, setPaws] = useState<Paw[]>([]);
-    const [showTgGuide, setShowTgGuide] = useState<boolean>(false);
+    const handleLogin = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const success = await login(password, 'SRT');
+        if (success) {
+            showToast('로그인 성공!', 'success');
+        } else {
+            showToast('로그인 실패. 정보를 확인하세요.', 'error');
+        }
+    };
 
     const handleGlobalClick = (e: React.MouseEvent) => {
         const newPaw: Paw = {
@@ -100,88 +64,9 @@ function App() {
         }, 1000);
     };
 
-    const saveApiSettings = (e: React.FormEvent) => {
-        e.preventDefault();
-        localStorage.setItem('skimbleshanks_api_base', apiBase);
-        localStorage.setItem('skimbleshanks_api_key', apiKey);
-        showToast('API 설정이 저장되었습니다. 페이지를 새로고침합니다...', 'success');
-        setTimeout(() => window.location.reload(), 1000);
-    };
-
-    const saveTelegramSettings = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-        try {
-            const res = await apiFetch('/telegram', {
-                method: 'POST',
-                body: JSON.stringify({ token: tgToken, chat_id: tgChatId })
-            });
-            if (res.ok) {
-                localStorage.setItem('skimbleshanks_tg_token', tgToken);
-                localStorage.setItem('skimbleshanks_tg_chat_id', tgChatId);
-                showToast('텔레그램 설정 완료 및 테스트 메시지 전송 성공!', 'success');
-            } else {
-                const data = await res.json();
-                showToast(`설정 실패: ${data.detail || '알 수 없는 오류'}`, 'error');
-            }
-        } catch (err) {
-            showToast('서버 연결 오류', 'error');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const addLog = useCallback((message: string, type: Log['type'] = 'info') => {
-        const time = new Date().toLocaleTimeString('ko-KR', { hour12: false });
-        setLogs(prev => [...prev, { time, message, type }].slice(-50)); // Keep last 50 logs
-    }, []);
-
-    const showToast = useCallback((message: string, type: string) => {
-        setToast({ message, type, key: Date.now() });
-    }, []);
-
-    const showAlert = useCallback((title: string, message: string, icon?: string, timer: number | null = null, btnLabel: string = '확인') => {
-        return new Promise<void>(resolve => {
-            setModal({
-                icon: icon || '📢',
-                title,
-                message,
-                buttons: [{ 
-                    label: btnLabel, 
-                    primary: true, 
-                    timer,
-                    onClick: () => { setModal(null); resolve(); } 
-                }]
-            });
-        });
-    }, []);
-
-    useEffect(() => {
-        document.title = "Skimbleshanks Web GUI";
-        checkConfig();
-    }, []);
-
-    const checkConfig = async () => {
-        try {
-            const res = await apiFetch('/config');
-            if (res.ok) {
-                const data = await res.json();
-                // 백엔드에 정보가 있더라도 프론트엔드에서는 직접 로그인을 거치도록 함
-                if (data.srt_user_id) setUserId(data.srt_user_id);
-            } else if (res.status === 403) {
-                showToast('API 인증 키(X-API-KEY)가 잘못되었습니다.', 'error');
-            }
-        } catch (e) {
-            // Silently fail for initial config check unless it's a specific auth error
-        }
-    };
-
-    const directionRef = useRef<number>(1); // 1 for Right, -1 for Left
-
     const handleCatClick = () => {
-        boostRef.current = 25; // Add raw FPS boost
-        directionRef.current *= -1; // Toggle direction
-        
+        boostRef.current = 25;
+        directionRef.current *= -1;
         if (framesRef.current) {
             framesRef.current.style.transition = 'none';
             framesRef.current.style.transform = `scale(1.3) rotate(-10deg) scaleX(${directionRef.current})`;
@@ -193,54 +78,35 @@ function App() {
 
     useEffect(() => {
         let lastTime = 0;
-        let position = 50; // Initial start position
+        let position = 50;
         let frameAcc = 0;
         
         const animate = (time: number) => {
-            if (!lastTime) {
-                lastTime = time;
-                requestAnimationFrame(animate);
-                return;
-            }
+            if (!lastTime) { lastTime = time; requestAnimationFrame(animate); return; }
             const dt = (time - lastTime) / 1000;
             lastTime = time;
 
-            // Decay boost
             boostRef.current *= 0.92;
             if (boostRef.current < 0.1) boostRef.current = 0;
 
             const currentFPS = 14 + Math.sin(time / 1200) * 10 + Math.sin(time / 500) * 4 + boostRef.current;
-            const catSpeed = currentFPS * 6.5; // px/s
-            const trackSpeed = 90; // Constant track feel
+            const catSpeed = currentFPS * 6.5;
+            const trackSpeed = 90;
             
-            // Calculate movement based on direction
-            // Right: catSpeed - trackSpeed
-            // Left: -catSpeed - trackSpeed
             const velocity = directionRef.current === 1 ? (catSpeed - trackSpeed) : (-catSpeed - trackSpeed);
             position += velocity * dt;
             
-            // Dynamic boundaries
             const trackWidth = trackRef.current ? trackRef.current.offsetWidth : 800;
             const minPos = -40;
             const maxPos = trackWidth - 80; 
             
-            if (position < minPos) {
-                position = minPos;
-                directionRef.current = 1; // Auto-turn right at left edge
-            }
-            if (position > maxPos) {
-                position = maxPos;
-                directionRef.current = -1; // Optional: auto-turn left at right edge? 
-                                          // User said "도착하면 다시 우측으로 방향 바꾸면 어떨까" for left edge.
-                                          // For right edge, we can just stop or turn back.
-            }
+            if (position < minPos) { position = minPos; directionRef.current = 1; }
+            if (position > maxPos) { position = maxPos; directionRef.current = -1; }
             
-            // Update frames
             frameAcc += currentFPS * dt;
             const frameIndex = Math.floor(frameAcc) % 5;
             
             if (catRef.current) catRef.current.style.transform = `translateX(${position}px)`;
-            // Apply scaleX based on direction to flip the image
             if (framesRef.current) {
                 framesRef.current.style.backgroundImage = `url('./cat/run_${frameIndex}.png')`;
                 framesRef.current.style.transform = `scaleX(${directionRef.current})`;
@@ -250,191 +116,29 @@ function App() {
         };
         const handle = requestAnimationFrame(animate);
         return () => cancelAnimationFrame(handle);
-    }, [isLoggedIn]);
-
-    const handleLogin = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-        try {
-            const res = await apiFetch('/login', {
-                method: 'POST',
-                body: JSON.stringify({ user_id: userId, password, provider: 'SRT' })
-            });
-            if (res.ok) {
-                setIsLoggedIn(true);
-                showToast('로그인 성공!', 'success');
-            } else if (res.status === 403) {
-                showToast('API 인증 키(X-API-KEY)가 올바르지 않습니다.', 'error');
-            } else if (res.status === 401) {
-                showToast('열차 서비스 로그인 실패. 아이디/비번을 확인하세요.', 'error');
-            } else {
-                showToast('로그인 처리 중 오류가 발생했습니다.', 'error');
-            }
-        } catch (e) {
-            showToast('서버 연결 오류', 'error');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const doSearch = async () => {
-        setLoading(true);
-        try {
-            const res = await apiFetch('/search', {
-                method: 'POST',
-                body: JSON.stringify({ dep, arr, date, time, adults, children, seniors, disability1to3: dis1to3, disability4to6: dis4to6, provider: 'SRT' })
-            });
-            if (res.ok) {
-                const data = await res.json();
-                setTrains(data.trains);
-                if (data.trains.length === 0) showToast('조회 결과가 없습니다.', 'error');
-            } else if (res.status === 403) {
-                showToast('API 인증 키가 올바르지 않습니다.', 'error');
-            } else {
-                showToast('조회 중 오류 발생', 'error');
-            }
-        } catch (e) {
-            showToast('서버 연결 오류', 'error');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const toggleTarget = (trainName: string, seatType: string) => {
-        setSelectedTargets(prev => {
-            const exists = prev.find(t => t.train_name === trainName && t.seat_type === seatType);
-            if (exists) return prev.filter(t => !(t.train_name === trainName && t.seat_type === seatType));
-            return [...prev, { train_name: trainName, seat_type: seatType }];
-        });
-    };
-
-    const bulkToggleTarget = (seatType: string) => {
-        if (trains.length === 0) return;
-        const allOfType = trains.map(t => ({ train_name: t.train_name, seat_type: seatType }));
-        const currentOfType = selectedTargets.filter(x => x.seat_type === seatType);
-        
-        if (currentOfType.length === trains.length) {
-            setSelectedTargets(prev => prev.filter(x => x.seat_type !== seatType));
-        } else {
-            setSelectedTargets(prev => {
-                const filtered = prev.filter(x => x.seat_type !== seatType);
-                return [...filtered, ...allOfType];
-            });
-        }
-    };
-
-    const startAutoReserve = () => {
-        if (selectedTargets.length === 0) return showAlert('알림', '예매할 열차를 먼저 선택해주세요.', '⚠️');
-        if (autoPayActive && (!cardNum || !cardPw || !cardBirth || !cardExp)) {
-            showAlert('알림', '자동 결제를 사용하려면 카드 정보를 먼저 입력해주세요.', '💳', 3000, '설정하러 가기')
-                .then(() => setActiveTab('settings'));
-            return;
-        }
-        setLogs([]); // Clear old logs
-        addLog('자동 예매를 시작합니다.', 'info');
-        setAutoReserveActive(true);
-        setAutoReserveAttempts(0);
-    };
-
-    const stopAutoReserve = () => {
-        addLog('자동 예매를 중지합니다.', 'warning');
-        setAutoReserveActive(false);
-        if (autoTimerRef.current) clearTimeout(autoTimerRef.current);
-    };
-
-    const autoReserveActiveRef = useRef(autoReserveActive);
-    useEffect(() => {
-        autoReserveActiveRef.current = autoReserveActive;
-        let isCancelled = false;
-        
-        if (autoReserveActive) {
-            const attemptReserve = async () => {
-                if (isCancelled || !autoReserveActiveRef.current) return;
-                
-                setAutoReserveAttempts(a => {
-                    const next = a + 1;
-                    addLog(`[${next}회차] 열차 조회 및 예매 시도 중...`, 'info');
-                    return next;
-                });
-                
-                try {
-                    const res = await apiFetch('/reserve', {
-                        method: 'POST',
-                        body: JSON.stringify({
-                            dep, arr, date, time, adults, children, seniors, disability1to3: dis1to3, disability4to6: dis4to6,
-                            targets: selectedTargets, auto_pay: autoPayActive,
-                            card_number: autoPayActive ? cardNum : '', card_password: autoPayActive ? cardPw : '',
-                            card_birthday: autoPayActive ? cardBirth : '', card_expire: autoPayActive ? cardExp : '',
-                            provider: 'SRT'
-                        })
-                    });
-                    
-                    if (isCancelled || !autoReserveActiveRef.current) return;
-                    
-                    if (!res.ok) {
-                        if (res.status === 403) {
-                            addLog('API 인증 키가 올바르지 않아 자동 예매를 중단합니다.', 'error');
-                            setAutoReserveActive(false);
-                            showAlert('❌ 인증 오류', 'API 인증 키(X-API-KEY)가 올바르지 않습니다.', '🚨');
-                            return;
-                        }
-                        const errData = await res.json().catch(() => ({ detail: '알 수 없는 오류' }));
-                        addLog(`예매 시도 실패: ${errData.detail || '서버 응답 오류'}`, 'error');
-                        autoTimerRef.current = setTimeout(attemptReserve, 2000);
-                        return;
-                    }
-
-                    const data = await res.json();
-                    if (data.success) {
-                        addLog(`예매 성공! ${data.message}`, 'success');
-                        setAutoReserveActive(false);
-                        showAlert('🎉 예매 성공!', data.message, '🎊');
-                    } else if (data.retry) {
-                        if (!isCancelled && autoReserveActiveRef.current) {
-                            autoTimerRef.current = setTimeout(attemptReserve, 1000);
-                        }
-                    } else {
-                        addLog(`예매 실패: ${data.message}`, 'error');
-                        setAutoReserveActive(false);
-                        showAlert('❌ 예매 실패', data.message, '🚨');
-                    }
-                } catch (e: any) {
-                    if (!isCancelled && autoReserveActiveRef.current) {
-                        addLog(`오류 발생: ${e.message}. 2초 후 재시도...`, 'error');
-                        autoTimerRef.current = setTimeout(attemptReserve, 2000);
-                    }
-                }
-            };
-            attemptReserve();
-        }
-        
-        return () => { 
-            isCancelled = true; 
-            if (autoTimerRef.current) clearTimeout(autoTimerRef.current); 
-        };
-    }, [autoReserveActive, dep, arr, date, time, adults, children, seniors, dis1to3, dis4to6, selectedTargets, autoPayActive, cardNum, cardPw, cardBirth, cardExp, addLog, showAlert]);
-
-    const saveCard = (e: React.FormEvent) => {
-        e.preventDefault();
-        localStorage.setItem('skimbleshanks_card_num', cardNum);
-        localStorage.setItem('skimbleshanks_card_pw', cardPw);
-        localStorage.setItem('skimbleshanks_card_birth', cardBirth);
-        localStorage.setItem('skimbleshanks_card_exp', cardExp);
-        showToast('카드 정보가 브라우저에 저장되었습니다.', 'success');
-        setTimeout(() => setActiveTab('search'), 600);
-    };
+    }, []);
 
     return (
-        <div onClick={handleGlobalClick} style={{minHeight: '100vh'}}>
-            {paws.map(paw => (
-                <div key={paw.id} className="paw-particle" style={{
-                    left: paw.x,
-                    top: paw.y,
-                    transform: `translate(-50%, -50%) rotate(${paw.rotate}deg)`
-                }}>🐾</div>
-            ))}
-            {toast && <Toast key={toast.key} message={toast.message} type={toast.type} onDone={() => setToast(null)} />}
-            {modal && <Modal {...modal} onClose={() => setModal(null)} />}
+        <div onClick={handleGlobalClick} style={{ minHeight: '100vh', position: 'relative', overflowX: 'hidden' }}>
+            <AnimatePresence>
+                {paws.map(paw => (
+                    <motion.div 
+                        key={paw.id}
+                        initial={{ opacity: 0, scale: 0.5 }}
+                        animate={{ opacity: 0.4, scale: 1 }}
+                        exit={{ opacity: 0, scale: 1.2 }}
+                        className="paw-particle" 
+                        style={{
+                            left: paw.x,
+                            top: paw.y,
+                            transform: `translate(-50%, -50%) rotate(${paw.rotate}deg)`
+                        }}
+                    >🐾</motion.div>
+                ))}
+            </AnimatePresence>
+
+            <Toast />
+            <Modal />
 
             <header>
                 <div className="steam-container">
@@ -448,34 +152,39 @@ function App() {
                     <div className="rail-track-sleepers-container">
                         <div className="rail-track-inner"></div>
                     </div>
-                    <div className="cat-runner" ref={catRef} onClick={handleCatClick} style={{cursor: 'pointer'}}>
-                        <div className="cat-runner-frames" ref={framesRef} style={{transition: 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)'}}></div>
+                    <div className="cat-runner" ref={catRef} onClick={handleCatClick} style={{ cursor: 'pointer' }}>
+                        <div className="cat-runner-frames" ref={framesRef} style={{ transition: 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)' }}></div>
                     </div>
                 </div>
             </header>
 
-            <div className="container">
+            <main className="container">
                 {!isLoggedIn ? (
-                    <div style={{maxWidth: '420px', margin: '5vh auto 0'}}>
-                        <div className="glass login-card" style={{margin: 0}}>
+                    <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        style={{ maxWidth: '420px', margin: '5vh auto 0' }}
+                    >
+                        <div className="glass login-card">
                             <form onSubmit={handleLogin}>
                                 <div className="input-group">
-                                    <label style={{fontSize: '1rem', marginBottom: '0.8rem'}}>SRT 서비스 아이디</label>
-                                    <input value={userId} onChange={e=>setUserId(e.target.value)} placeholder="아이디 입력" required/>
+                                    <label>SRT 서비스 아이디</label>
+                                    <input value={userId} onChange={e => setUserId(e.target.value)} placeholder="아이디 입력" required />
                                 </div>
                                 <div className="input-group">
-                                    <label style={{fontSize: '1rem', marginBottom: '0.8rem'}}>비밀번호</label>
-                                    <input type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="비밀번호 입력" required/>
+                                    <label>비밀번호</label>
+                                    <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="비밀번호 입력" required />
                                 </div>
-                                <button type="submit" className="btn-primary" disabled={loading} style={{marginTop: '1rem'}}>
+                                <button type="submit" className="btn-primary" disabled={loading} style={{ marginTop: '1rem' }}>
+                                    <LogIn size={18} style={{ marginRight: '8px' }} />
                                     {loading ? '로그인 중...' : '로그인'}
                                 </button>
                             </form>
                         </div>
                         
-                        <div className="glass" style={{marginTop: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 2rem', opacity: 0.8}}>
-                            <span style={{fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center'}}>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{marginRight: '8px'}}><polyline points="4 17 10 11 4 5"/><line x1="12" x2="20" y1="19" y2="19"/></svg>
+                        <div className="glass" style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 2rem', opacity: 0.8 }}>
+                            <span style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center' }}>
+                                <Terminal size={18} style={{ marginRight: '8px' }} />
                                 개발자 설정 (API)
                             </span>
                             <label className="switch">
@@ -484,20 +193,10 @@ function App() {
                             </label>
                         </div>
 
-                        {devMode && (
-                            <ApiSettings 
-                                apiBase={apiBase} setApiBase={setApiBase} 
-                                apiKey={apiKey} setApiKey={setApiKey} 
-                                saveApiSettings={saveApiSettings}
-                                tgToken={tgToken} setTgToken={setTgToken} 
-                                tgChatId={tgChatId} setTgChatId={setTgChatId} 
-                                saveTelegramSettings={saveTelegramSettings}
-                                showTgGuide={showTgGuide} setShowTgGuide={setShowTgGuide}
-                            />
-                        )}
-                    </div>
+                        {devMode && <ApiSettings />}
+                    </motion.div>
                 ) : (
-                    <>
+                    <div className="dashboard-layout">
                         <div className="nav-tabs-wrapper">
                             <div className="nav-tabs">
                                 <div className="active-bg" style={{
@@ -505,53 +204,51 @@ function App() {
                                     transform: activeTab === 'search' ? 'translateX(0)' : 'translateX(150px)',
                                     left: '0.4rem'
                                 }}></div>
-                                <button className={activeTab === 'search' ? 'active' : ''} onClick={() => setActiveTab('search')} style={{width: '150px'}}>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                                    예매
+                                <button className={activeTab === 'search' ? 'active' : ''} onClick={() => setActiveTab('search')} style={{ width: '150px' }}>
+                                    <Search size={18} style={{ marginRight: '8px' }} /> 예매
                                 </button>
-                                <button className={activeTab === 'settings' ? 'active' : ''} onClick={() => setActiveTab('settings')} style={{width: '150px'}}>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
-                                    설정
+                                <button className={activeTab === 'settings' ? 'active' : ''} onClick={() => setActiveTab('settings')} style={{ width: '150px' }}>
+                                    <Settings size={18} style={{ marginRight: '8px' }} /> 설정
                                 </button>
                             </div>
                         </div>
 
-                        {activeTab === 'search' && (
-                            <div className="dashboard">
-                                <SearchForm 
-                                    dep={dep} setDep={setDep} arr={arr} setArr={setArr} date={date} setDate={setDate} time={time} setTime={setTime}
-                                    adults={adults} setAdults={setAdults} children={children} setChildren={setChildren} seniors={seniors} setSeniors={setSeniors}
-                                    dis1to3={dis1to3} setDis1to3={setDis1to3} dis4to6={dis4to6} setDis4to6={setDis4to6}
-                                    doSearch={doSearch} stations={stationList}
-                                />
-                                <TrainList 
-                                    trains={trains} selectedTargets={selectedTargets} toggleTarget={toggleTarget} bulkToggleTarget={bulkToggleTarget}
-                                    autoReserveActive={autoReserveActive} autoReserveAttempts={autoReserveAttempts}
-                                    startAutoReserve={startAutoReserve} stopAutoReserve={stopAutoReserve}
-                                    logs={logs}
-                                />
-                            </div>
-                        )}
-
-
-                        {activeTab === 'settings' && (
-                            <SettingsCard 
-                                cardNum={cardNum} setCardNum={setCardNum} cardPw={cardPw} setCardPw={setCardPw}
-                                cardBirth={cardBirth} setCardBirth={setCardBirth} cardExp={cardExp} setCardExp={setCardExp}
-                                saveCard={saveCard}
-                                apiBase={apiBase} setApiBase={setApiBase} apiKey={apiKey} setApiKey={setApiKey}
-                                saveApiSettings={saveApiSettings}
-                                devMode={devMode} setDevMode={setDevMode}
-                                tgToken={tgToken} setTgToken={setTgToken}
-                                tgChatId={tgChatId} setTgChatId={setTgChatId}
-                                saveTelegramSettings={saveTelegramSettings}
-                            />
-                        )}
-                    </>
+                        <motion.div 
+                            key={activeTab}
+                            initial={{ opacity: 0, x: 10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="dashboard-content"
+                        >
+                            {activeTab === 'search' ? (
+                                <div className="dashboard">
+                                    <SearchForm stations={STATIONS} />
+                                    <TrainList />
+                                </div>
+                            ) : (
+                                <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+                                    <ApiSettings />
+                                    <div className="glass" style={{ marginTop: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 2rem', opacity: 0.8 }}>
+                                        <span style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center' }}>
+                                            <Terminal size={18} style={{ marginRight: '8px' }} /> 개발자 모드
+                                        </span>
+                                        <label className="switch">
+                                            <input type="checkbox" checked={devMode} onChange={e => setDevMode(e.target.checked)} />
+                                            <span className="slider round"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            )}
+                        </motion.div>
+                    </div>
                 )}
-            </div>
+            </main>
+
+            <footer style={{ textAlign: 'center', padding: '3rem', opacity: 0.4, fontSize: '0.8rem' }}>
+                <a href="https://github.com/zits93/skimbleshanks" target="_blank" rel="noreferrer" style={{ color: 'inherit', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <Github size={14} /> GitHub Repository
+                </a>
+            </footer>
         </div>
     );
 }
-
-export default App;
