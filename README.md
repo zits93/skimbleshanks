@@ -71,5 +71,5 @@ uvicorn src.api.app:app --host 0.0.0.0 --port 8000
 - `tests`: Pytest 기반 단위 및 통합 테스트
 
 ## 🤝 Acknowledgments
-- 본 프로젝트는 [SRTgo](https://github.com/zits93/srtgo) 프로젝트에서 포크되어 새로운 컨셉과 기능으로 재작성된 독립 프로젝트입니다. 원작자의 노고에 감사드립니다.
+- 본 프로젝트는 [SRTgo](https://github.com/lapis42/srtgo) 프로젝트에서 포크되어 새로운 컨셉과 기능으로 재작성된 독립 프로젝트입니다. 원작자의 노고에 감사드립니다.
 - This project includes code from [SRT](https://github.com/ryanking13/SRT) by ryanking13 (MIT License) and [korail2](https://github.com/carpedm20/korail2) by carpedm20 (BSD License).
