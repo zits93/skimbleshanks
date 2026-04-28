@@ -176,13 +176,17 @@ function App() {
         }
     };
 
+    const directionRef = useRef<number>(1); // 1 for Right, -1 for Left
+
     const handleCatClick = () => {
         boostRef.current = 25; // Add raw FPS boost
+        directionRef.current *= -1; // Toggle direction
+        
         if (framesRef.current) {
             framesRef.current.style.transition = 'none';
-            framesRef.current.style.transform = 'scale(1.3) rotate(-10deg)';
+            framesRef.current.style.transform = `scale(1.3) rotate(-10deg) scaleX(${directionRef.current})`;
             setTimeout(() => {
-                if (framesRef.current) framesRef.current.style.transform = 'scale(1) rotate(0deg)';
+                if (framesRef.current) framesRef.current.style.transform = `scale(1) rotate(0deg) scaleX(${directionRef.current})`;
             }, 100);
         }
     };
@@ -209,22 +213,38 @@ function App() {
             const catSpeed = currentFPS * 6.5; // px/s
             const trackSpeed = 90; // Constant track feel
             
-            position += (catSpeed - trackSpeed) * dt;
+            // Calculate movement based on direction
+            // Right: catSpeed - trackSpeed
+            // Left: -catSpeed - trackSpeed
+            const velocity = directionRef.current === 1 ? (catSpeed - trackSpeed) : (-catSpeed - trackSpeed);
+            position += velocity * dt;
             
             // Dynamic boundaries
             const trackWidth = trackRef.current ? trackRef.current.offsetWidth : 800;
             const minPos = -40;
             const maxPos = trackWidth - 80; 
             
-            if (position < minPos) position = minPos;
-            if (position > maxPos) position = maxPos;
+            if (position < minPos) {
+                position = minPos;
+                directionRef.current = 1; // Auto-turn right at left edge
+            }
+            if (position > maxPos) {
+                position = maxPos;
+                directionRef.current = -1; // Optional: auto-turn left at right edge? 
+                                          // User said "도착하면 다시 우측으로 방향 바꾸면 어떨까" for left edge.
+                                          // For right edge, we can just stop or turn back.
+            }
             
             // Update frames
             frameAcc += currentFPS * dt;
             const frameIndex = Math.floor(frameAcc) % 5;
             
             if (catRef.current) catRef.current.style.transform = `translateX(${position}px)`;
-            if (framesRef.current) framesRef.current.style.backgroundImage = `url('./cat/run_${frameIndex}.png')`;
+            // Apply scaleX based on direction to flip the image
+            if (framesRef.current) {
+                framesRef.current.style.backgroundImage = `url('./cat/run_${frameIndex}.png')`;
+                framesRef.current.style.transform = `scaleX(${directionRef.current})`;
+            }
             
             requestAnimationFrame(animate);
         };
