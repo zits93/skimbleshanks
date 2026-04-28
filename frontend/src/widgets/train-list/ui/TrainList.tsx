@@ -1,6 +1,5 @@
-import { useRailStore } from '../store/railStore';
-import { useLogStore } from '../store/logStore';
-import { LogViewer } from './LogViewer';
+import { useRailStore } from '../../../features/reservation/model/railStore';
+import { LogViewer } from '../../../entities/log/ui/LogViewer';
 import { Play, Square, Info, Check } from 'lucide-react';
 
 export function TrainList() {
@@ -8,7 +7,6 @@ export function TrainList() {
         trains, selectedTargets, toggleTarget, bulkToggleTarget,
         autoReserveActive, autoReserveAttempts, startAutoReserve, stopAutoReserve
     } = useRailStore();
-    const { logs } = useLogStore();
 
     if (trains.length === 0) {
         return (
@@ -26,13 +24,13 @@ export function TrainList() {
                     <h3 style={{color: 'var(--text-muted)'}}>열차를 조회해주세요</h3>
                     <p style={{fontSize: '0.9rem', color: 'var(--text-muted)'}}>출발지와 목적지를 선택하고 조회 버튼을 눌러주세요</p>
                 </div>
-                <LogViewer logs={logs} />
+                <LogViewer />
             </div>
         );
     }
 
     const isSelected = (trainName: string, seatType: string) => 
-        selectedTargets.some(x => x.train_name === trainName && x.seat_type === seatType);
+        selectedTargets.some((x: any) => x.train_name === trainName && x.seat_type === seatType);
 
     const formatTime = (tm: string) => {
         if (!tm || tm.length < 4) return '--:--';
@@ -58,7 +56,7 @@ export function TrainList() {
                     </div>
                 </div>
                 
-                <div style={{display: 'flex', alignItems: 'center', gap: '1rem', alignItems: 'center'}}>
+                <div style={{display: 'flex', alignItems: 'center', gap: '1rem'}}>
                     {autoReserveActive ? (
                         <button className="btn-primary pulse-red" onClick={stopAutoReserve} style={{
                             background: 'linear-gradient(135deg, #ef4444, #b91c1c)', 
@@ -107,7 +105,6 @@ export function TrainList() {
                 </div>
             </div>
             
-            {/* Bulk Selection Controls */}
             <div style={{
                 display: 'grid',
                 gridTemplateColumns: '1fr 1fr',
@@ -116,18 +113,18 @@ export function TrainList() {
             }}>
                 <BulkSelectButton 
                     label="일반실 전체"
-                    isSelected={selectedTargets.filter(x => x.seat_type === 'GENERAL_FIRST').length === trains.length}
+                    isSelected={selectedTargets.filter((x: any) => x.seat_type === 'GENERAL_FIRST').length === trains.length}
                     onClick={() => bulkToggleTarget('GENERAL_FIRST')}
                 />
                 <BulkSelectButton 
                     label="특실 전체"
-                    isSelected={selectedTargets.filter(x => x.seat_type === 'SPECIAL_ONLY').length === trains.length}
+                    isSelected={selectedTargets.filter((x: any) => x.seat_type === 'SPECIAL_ONLY').length === trains.length}
                     onClick={() => bulkToggleTarget('SPECIAL_ONLY')}
                 />
             </div>
 
             <div className="train-list" style={{display: 'flex', flexDirection: 'column', gap: '1rem'}}>
-                {trains.map(t => (
+                {trains.map((t: any) => (
                     <div key={t.id} className="train-item" style={{
                         display: 'grid',
                         gridTemplateColumns: '1fr 2fr',
@@ -169,7 +166,7 @@ export function TrainList() {
                 ))}
             </div>
             
-            <LogViewer logs={logs} />
+            <LogViewer />
         </div>
     );
 }

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useLogStore } from '../store/logStore';
+import { useLogStore } from '../model/logStore';
 import { Terminal } from 'lucide-react';
 
 export function LogViewer() {

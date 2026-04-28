@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { apiFetch } from '../api';
+import { apiFetch } from '../../../shared/api/api';
 
 interface AuthStore {
     isLoggedIn: boolean;

@@ -1,7 +1,7 @@
-import { useRailStore } from '../store/railStore';
-import { useAuthStore } from '../store/authStore';
-import { useUiStore } from '../store/uiStore';
-import { Server, Send, Key, Globe, CreditCard, Info } from 'lucide-react';
+import { useRailStore } from '../../reservation/model/railStore';
+import { useAuthStore } from '../../auth/model/authStore';
+import { useUiStore } from '../../../shared/api/uiStore';
+import { Server, Send, CreditCard, Info } from 'lucide-react';
 
 export function ApiSettings() {
     const { 

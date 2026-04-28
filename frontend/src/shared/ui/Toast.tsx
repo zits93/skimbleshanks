@@ -1,6 +1,6 @@
 import ReactDOM from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useUiStore } from '../store/uiStore';
+import { useUiStore } from '../api/uiStore';
 import { useEffect } from 'react';
 
 export function Toast() {

@@ -1,6 +1,6 @@
 import ReactDOM from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useUiStore } from '../store/uiStore';
+import { useUiStore } from '../api/uiStore';
 import { useEffect } from 'react';
 
 export function Modal() {
@@ -8,7 +8,7 @@ export function Modal() {
 
     useEffect(() => {
         if (modal) {
-            const timerBtn = modal.buttons.find(b => b.timer);
+            const timerBtn = modal.buttons.find((b: any) => b.timer);
             if (timerBtn) {
                 const t = setTimeout(() => {
                     timerBtn.onClick();
@@ -30,17 +30,17 @@ export function Modal() {
                 onClick={hideModal}
             >
                 <motion.div 
-                    initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                    animate={{ scale: 1, opacity: 1, y: 0 }}
-                    exit={{ scale: 0.9, opacity: 0, y: 10 }}
-                    className="modal-box" 
+                    initial={{ scale: 0.9, y: 20 }}
+                    animate={{ scale: 1, y: 0 }}
+                    exit={{ scale: 0.9, y: 20 }}
+                    className="modal-content glass" 
                     onClick={e => e.stopPropagation()}
                 >
-                    {modal.icon && <span className="modal-icon">{modal.icon}</span>}
-                    {modal.title && <p className="modal-title">{modal.title}</p>}
-                    {modal.message && <p className="modal-message">{modal.message}</p>}
+                    <div className="modal-icon">{modal.icon}</div>
+                    <h3>{modal.title}</h3>
+                    <p>{modal.message}</p>
                     <div className="modal-buttons">
-                        {modal.buttons.map((btn, i) => (
+                        {modal.buttons.map((btn: any, i: number) => (
                             <button
                                 key={i}
                                 className={btn.primary ? 'modal-btn-primary' : 'modal-btn-secondary'}

@@ -1,14 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Toast } from './components/Toast';
-import { Modal } from './components/Modal';
-import { SearchForm } from './components/SearchForm';
-import { TrainList } from './components/TrainList';
-import { ApiSettings } from './components/ApiSettings';
-import { useAuthStore } from './store/authStore';
-import { useRailStore } from './store/railStore';
-import { useUiStore } from './store/uiStore';
-import { Settings, Search, LogIn, Github, Terminal } from 'lucide-react';
+import { Toast } from '../shared/ui/Toast';
+import { Modal } from '../shared/ui/Modal';
+import { SearchForm } from '../widgets/search-form/ui/SearchForm';
+import { TrainList } from '../widgets/train-list/ui/TrainList';
+import { ApiSettings } from '../features/api-settings/ui/ApiSettings';
+import { useAuthStore } from '../features/auth/model/authStore';
+import { useUiStore } from '../shared/api/uiStore';
+import { Settings, Search, User, Globe, Terminal } from 'lucide-react';
 import './style.css';
 
 const STATIONS = ["수서", "동탄", "평택지제", "곡성", "공주", "광주송정", "구례구", "김천(구미)", "나주", "남원", "대구", "대전", "마산", "목포", "밀양", "부산", "서대구", "순천", "신경주", "여수EXPO", "여천", "오송", "울산(통도사)", "익산", "전주", "진영", "진주", "창원", "창원중앙", "천안아산", "포항"];
@@ -27,7 +26,6 @@ export default function App() {
     const [paws, setPaws] = useState<Paw[]>([]);
 
     const { isLoggedIn, userId, loading, setUserId, login, checkConfig } = useAuthStore();
-    const { autoReserveActive } = useRailStore();
     const { showToast } = useUiStore();
 
     const trackRef = useRef<HTMLDivElement>(null);
@@ -176,7 +174,7 @@ export default function App() {
                                     <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="비밀번호 입력" required />
                                 </div>
                                 <button type="submit" className="btn-primary" disabled={loading} style={{ marginTop: '1rem' }}>
-                                    <LogIn size={18} style={{ marginRight: '8px' }} />
+                                    <User size={18} style={{ marginRight: '8px' }} />
                                     {loading ? '로그인 중...' : '로그인'}
                                 </button>
                             </form>
@@ -246,7 +244,7 @@ export default function App() {
 
             <footer style={{ textAlign: 'center', padding: '3rem', opacity: 0.4, fontSize: '0.8rem' }}>
                 <a href="https://github.com/zits93/skimbleshanks" target="_blank" rel="noreferrer" style={{ color: 'inherit', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Github size={14} /> GitHub Repository
+                    <Globe size={14} /> GitHub Repository
                 </a>
             </footer>
         </div>

@@ -1,9 +1,6 @@
-
-import { PassengerSelect } from './PassengerSelect';
-
-import { PassengerSelect } from './PassengerSelect';
-import { useRailStore } from '../store/railStore';
-import { useAuthStore } from '../store/authStore';
+import { PassengerSelect } from '../../../shared/ui/PassengerSelect';
+import { useRailStore } from '../../../features/reservation/model/railStore';
+import { useAuthStore } from '../../../features/auth/model/authStore';
 import { Search, ArrowLeftRight } from 'lucide-react';
 
 export function SearchForm({ stations }: { stations: string[] }) {

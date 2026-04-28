@@ -1,8 +1,8 @@
 import { create } from 'zustand';
-import { apiFetch } from '../api';
-import { Train, Target } from '../types';
-import { useLogStore } from './logStore';
-import { useUiStore } from './uiStore';
+import { apiFetch } from '../../../shared/api/api';
+import { Train, Target } from '../../../shared/api/types';
+import { useLogStore } from '../../../entities/log/model/logStore';
+import { useUiStore } from '../../../shared/api/uiStore';
 
 interface RailStore {
     trains: Train[];
