@@ -36,9 +36,9 @@ function AppContent() {
     useEffect(() => {
         const path = location.pathname;
         if (!isLoggedIn && path !== '/login') {
-            navigate('/login');
+            navigate('/login', { replace: true });
         } else if (isLoggedIn && path === '/login') {
-            navigate('/');
+            navigate('/', { replace: true });
         }
     }, [isLoggedIn, location.pathname, navigate]);
 
@@ -71,8 +71,7 @@ function AppContent() {
         let lastTime = 0;
         let position = 50;
         let frameAcc = 0;
-        // Use relative path for public assets in JS to be safe with HashRouter
-        const base = import.meta.env.BASE_URL;
+        const base = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
         
         const animate = (time: number) => {
             if (!lastTime) { lastTime = time; requestAnimationFrame(animate); return; }
@@ -101,8 +100,7 @@ function AppContent() {
             
             if (catRef.current) catRef.current.style.transform = `translateX(${position}px)`;
             if (framesRef.current) {
-                // Absolute path from site root is safest if base is set correctly
-                const imgPath = `${base}cat/run_${frameIndex}.png`.replace(/\/+/g, '/');
+                const imgPath = `${base}/cat/run_${frameIndex}.png`;
                 framesRef.current.style.backgroundImage = `url('${imgPath}')`;
                 framesRef.current.style.transform = `scaleX(${directionRef.current})`;
             }
