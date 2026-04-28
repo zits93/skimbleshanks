@@ -425,7 +425,9 @@ function App() {
                 <h1>Skimble<span>shanks</span></h1>
                 <p className="quote">The Railway Cat</p>
                 <div className="rail-track" ref={trackRef}>
-                    <div className="rail-track-inner"></div>
+                    <div className="rail-track-sleepers-container">
+                        <div className="rail-track-inner"></div>
+                    </div>
                     <div className="cat-runner" ref={catRef} onClick={handleCatClick} style={{cursor: 'pointer'}}>
                         <div className="cat-runner-frames" ref={framesRef} style={{transition: 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)'}}></div>
                     </div>
