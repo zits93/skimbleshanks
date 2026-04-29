@@ -10,6 +10,7 @@ interface RailStore {
     autoReserveActive: boolean;
     autoReserveAttempts: number;
     searching: boolean;
+    activeTaskId: string | null;
     
     // Search Fields
     dep: string;
@@ -48,6 +49,7 @@ export const useRailStore = create<RailStore>((set, get) => ({
     autoReserveActive: false,
     autoReserveAttempts: 0,
     searching: false,
+    activeTaskId: null,
 
     dep: '수서',
     arr: '부산',
@@ -133,70 +135,80 @@ export const useRailStore = create<RailStore>((set, get) => ({
         }
     },
 
-    startAutoReserve: () => {
-        const { selectedTargets, cardNum, cardPw, cardBirth, cardExp } = get();
+    startAutoReserve: async () => {
+        const { selectedTargets } = get();
         const { showAlert } = useUiStore.getState();
         const { addLog, clearLogs } = useLogStore.getState();
 
         if (selectedTargets.length === 0) return showAlert('알림', '예매할 열차를 먼저 선택해주세요.', '⚠️');
-        if (!cardNum || !cardPw || !cardBirth || !cardExp) {
-            useUiStore.getState().setActiveTab('settings');
-            showAlert('알림', '자동 결제를 위한 카드 정보를 모두 입력해주세요.', '💳', 5000, '확인');
-            return;
-        }
 
         clearLogs();
-        addLog('자동 예매를 시작합니다.', 'info');
-        set({ autoReserveActive: true, autoReserveAttempts: 0 });
+        addLog('서버 예매 세션을 요청합니다...', 'info');
         
-        const attempt = async () => {
+        try {
             const state = get();
-            if (!state.autoReserveActive) return;
+            const res = await apiFetch('/reserve/start', {
+                method: 'POST',
+                body: JSON.stringify({
+                    dep: state.dep, arr: state.arr, date: state.date, time: state.time,
+                    adults: state.adults, children: state.children, seniors: state.seniors,
+                    disability1to3: state.dis1to3, disability4to6: state.dis4to6,
+                    targets: state.selectedTargets, auto_pay: true,
+                    provider: 'SRT'
+                })
+            });
 
-            set(s => ({ autoReserveAttempts: s.autoReserveAttempts + 1 }));
-            const currentAttempt = get().autoReserveAttempts;
-            addLog(`[${currentAttempt}회차] 열차 조회 및 예매 시도 중...`, 'info');
+            const { task_id } = await res.json();
+            set({ autoReserveActive: true, activeTaskId: task_id, autoReserveAttempts: 0 });
 
-            try {
-                const res = await apiFetch('/reserve', {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        dep: state.dep, arr: state.arr, date: state.date, time: state.time,
-                        adults: state.adults, children: state.children, seniors: state.seniors,
-                        disability1to3: state.dis1to3, disability4to6: state.dis4to6,
-                        targets: state.selectedTargets, auto_pay: true,
-                        provider: 'SRT'
-                        // card info is now pulled from backend config_store preferentially
-                    })
-                });
-
-                if (!get().autoReserveActive) return;
-
-                const data = await res.json();
-                if (data.success) {
-                    addLog(`예매 성공! ${data.message}`, 'success');
-                    set({ autoReserveActive: false });
-                    showAlert('🎉 예매 성공!', data.message, '🎊');
-                } else if (data.retry) {
-                    autoTimer = setTimeout(attempt, 1000);
-                } else {
-                    addLog(`예매 실패: ${data.message}`, 'error');
-                    set({ autoReserveActive: false });
-                    showAlert('❌ 예매 실패', data.message, '🚨');
+            // Connect to SSE for status updates
+            const API_BASE = localStorage.getItem('skimbleshanks_api_base') || 
+                            ((import.meta as any).env?.VITE_API_URL) || 
+                            (window.location.hostname === 'localhost' ? 'http://localhost:8000/api' : `${window.location.origin}/api`);
+            
+            const eventSource = new EventSource(`${API_BASE}/reserve/status/${task_id}`);
+            
+            eventSource.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.message) {
+                    addLog(data.message, data.type === 'error' ? 'error' : data.type === 'success' ? 'success' : 'info');
                 }
-            } catch (e: any) {
-                addLog(`오류 발생: ${e.message || '서버 연결 오류'}`, 'error');
-                autoTimer = setTimeout(attempt, 3000);
-            }
-        };
+                
+                if (data.type === 'info' && data.message.includes('회차')) {
+                    set(s => ({ autoReserveAttempts: s.autoReserveAttempts + 1 }));
+                }
 
-        attempt();
+                if (data.type === 'success') {
+                    showAlert('🎉 예매 성공!', data.message, '🎊');
+                    set({ autoReserveActive: false, activeTaskId: null });
+                    eventSource.close();
+                } else if (data.type === 'stop') {
+                    set({ autoReserveActive: false, activeTaskId: null });
+                    eventSource.close();
+                }
+            };
+
+            eventSource.onerror = () => {
+                addLog('실시간 상태 연결에 실패했습니다. (백그라운드에서 예매는 계속될 수 있습니다)', 'warning');
+                eventSource.close();
+            };
+
+        } catch (e: any) {
+            addLog(`예매 시작 실패: ${e.message}`, 'error');
+        }
     },
 
-    stopAutoReserve: () => {
+    stopAutoReserve: async () => {
+        const { activeTaskId } = get();
         const { addLog } = useLogStore.getState();
-        addLog('자동 예매를 중지합니다.', 'warning');
-        set({ autoReserveActive: false });
-        if (autoTimer) clearTimeout(autoTimer);
+        
+        if (activeTaskId) {
+            try {
+                await apiFetch(`/reserve/stop/${activeTaskId}`, { method: 'POST' });
+                addLog('예매 중지 요청을 보냈습니다.', 'warning');
+            } catch (e) {}
+        }
+        
+        set({ autoReserveActive: false, activeTaskId: null });
     }
 }));

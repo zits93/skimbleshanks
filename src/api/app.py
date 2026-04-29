@@ -10,6 +10,10 @@ from src.services.notifications import send_telegram
 from src.services import config_store, rail_service
 from src.services.logger import logger
 from src.adapters.rail import login_client, is_seat_available, SeatType
+import asyncio
+import uuid
+import json
+from fastapi.responses import StreamingResponse
 
 
 app = FastAPI(title="Skimbleshanks API")
@@ -44,6 +48,100 @@ async def verify_api_key(x_api_key: Optional[str] = Header(None)):
             detail={"code": "ERR_INVALID_API_KEY", "message": "Invalid or missing API Key"}
         )
     return x_api_key
+
+# --- Background Task Management ---
+class ReservationStatus:
+    def __init__(self):
+        self.queue = asyncio.Queue()
+        self.active = True
+        self.attempts = 0
+
+    async def push(self, data: dict):
+        await self.queue.put(data)
+
+RESERVATION_TASKS = {}
+
+async def run_reservation_loop(task_id: str, req: ReserveRequest):
+    status = RESERVATION_TASKS.get(task_id)
+    if not status: return
+
+    logger.info(f"Starting background reservation loop: {task_id}")
+    provider = req.provider
+    rail = None
+    
+    try:
+        while status.active:
+            status.attempts += 1
+            if status.attempts % 10 == 1 or not rail:
+                await status.push({"type": "info", "message": f"[{status.attempts}회차] 세션 확인 및 예매 시도..."})
+                rail = await _login(provider=provider)
+            else:
+                await status.push({"type": "info", "message": f"[{status.attempts}회차] 예매 시도 중..."})
+            
+            if not rail:
+                await status.push({"type": "error", "message": "로그인 세션 확보 실패. 10초 후 재시도합니다."})
+                await asyncio.sleep(10)
+                continue
+
+            passengers = rail_service.build_passengers(
+                req.adults, req.children, req.seniors, req.disability1to3, req.disability4to6
+            )
+
+            try:
+                trains = await run_in_threadpool(
+                    rail.search_train,
+                    dep=req.dep, arr=req.arr, date=req.date, time=req.time,
+                    passengers=passengers, available_only=False,
+                )
+
+                found = False
+                for target in req.targets:
+                    target_train = rail_service.find_target_train(trains, target.train_name)
+                    if not target_train: continue
+
+                    stype = rail_service.get_seat_type_enum(target.seat_type)
+                    if not stype: continue
+
+                    if is_seat_available(target_train, stype):
+                        found = True
+                        await status.push({"type": "info", "message": f"좌석 발견! {target.train_name} 예매 시도..."})
+                        reserve_info = await run_in_threadpool(rail.reserve, target_train, passengers=passengers, option=stype)
+                        
+                        msg = f"예매 성공! {reserve_info}"
+                        
+                        # Auto pay logic
+                        card_info = config_store.get_card_payment_info()
+                        if req.auto_pay and card_info and not getattr(reserve_info, 'is_waiting', False):
+                            paid = await run_in_threadpool(
+                                rail.pay_with_card, reserve_info, 
+                                card_info[0], card_info[1], card_info[2], card_info[3],
+                                0, "J" if len(card_info[2]) == 6 else "S"
+                            )
+                            if paid: msg += " (결제 완료)"
+
+                        await status.push({"type": "success", "message": msg})
+                        try: await run_in_threadpool(send_telegram, msg)
+                        except: pass
+                        
+                        status.active = False
+                        return
+
+                if not found:
+                    await asyncio.sleep(1.2) 
+                    
+            except Exception as e:
+                logger.error(f"Loop error in {task_id}: {e}")
+                # Reset rail on error to force re-login
+                rail = None
+                await status.push({"type": "error", "message": f"오류 발생: {str(e)} (세션 재설정)"})
+                await asyncio.sleep(3)
+
+    except Exception as e:
+        logger.exception(f"Fatal error in background task {task_id}")
+        await status.push({"type": "error", "message": "치명적 오류로 작업이 중단되었습니다."})
+    finally:
+        status.active = False
+        await status.push({"type": "stop", "message": "작업이 종료되었습니다."})
 
 class LoginRequest(BaseModel):
     user_id: str
@@ -324,6 +422,47 @@ async def reserve_train(req: ReserveRequest):
     except Exception as e:
         logger.exception("Reservation error")
         return {"success": False, "message": "An internal error occurred.", "retry": True}
+
+@app.post("/api/reserve/start", dependencies=[Depends(verify_api_key)])
+async def start_reserve(req: ReserveRequest):
+    task_id = str(uuid.uuid4())
+    status = ReservationStatus()
+    RESERVATION_TASKS[task_id] = status
+    
+    # Run in background without blocking
+    asyncio.create_task(run_reservation_loop(task_id, req))
+    
+    return {"task_id": task_id}
+
+@app.post("/api/reserve/stop/{task_id}", dependencies=[Depends(verify_api_key)])
+async def stop_reserve(task_id: str):
+    if task_id in RESERVATION_TASKS:
+        RESERVATION_TASKS[task_id].active = False
+        return {"message": "Stopping task..."}
+    raise HTTPException(status_code=404, detail="Task not found")
+
+@app.get("/api/reserve/status/{task_id}")
+async def reserve_status(task_id: str):
+    if task_id not in RESERVATION_TASKS:
+        raise HTTPException(status_code=404, detail="Task not found")
+    
+    status = RESERVATION_TASKS[task_id]
+
+    async def event_generator():
+        try:
+            while True:
+                data = await status.queue.get()
+                yield f"data: {json.dumps(data)}\n\n"
+                if data["type"] in ["success", "stop"]:
+                    break
+        except asyncio.CancelledError:
+            pass
+        finally:
+            # Clean up task from memory if finished
+            if not status.active:
+                RESERVATION_TASKS.pop(task_id, None)
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 # Serve frontend static files if they exist
 if os.path.exists("frontend/dist"):
