@@ -30,10 +30,13 @@ describe('ApiConnectionSettings', () => {
         render(<ApiConnectionSettings />);
         
         const baseInput = screen.getByPlaceholderText(/localhost:8000/i);
-        fireEvent.blur(baseInput, { target: { value: 'https://api.test.com' } });
+        fireEvent.change(baseInput, { target: { value: 'https://api.test.com' } });
+        
+        const saveBtn = screen.getByText(/저장 후 새로고침/i);
+        fireEvent.click(saveBtn);
         
         expect(localStorage.getItem('skimbleshanks_api_base')).toBe('https://api.test.com');
-        expect(mockShowToast).toHaveBeenCalledWith(expect.stringContaining('주소가 저장'), 'success');
+        expect(mockShowToast).toHaveBeenCalledWith(expect.stringContaining('설정이 저장'), 'success');
         
         vi.advanceTimersByTime(1000);
         expect(mockReload).toHaveBeenCalled();
@@ -43,10 +46,13 @@ describe('ApiConnectionSettings', () => {
         render(<ApiConnectionSettings />);
         
         const keyInput = screen.getByPlaceholderText(/인증 키를 입력/i);
-        fireEvent.blur(keyInput, { target: { value: 'secret-key' } });
+        fireEvent.change(keyInput, { target: { value: 'secret-key' } });
+        
+        const saveBtn = screen.getByText(/저장 후 새로고침/i);
+        fireEvent.click(saveBtn);
         
         expect(localStorage.getItem('skimbleshanks_api_key')).toBe('secret-key');
-        expect(mockShowToast).toHaveBeenCalledWith(expect.stringContaining('키가 저장'), 'success');
+        expect(mockShowToast).toHaveBeenCalledWith(expect.stringContaining('설정이 저장'), 'success');
         
         vi.advanceTimersByTime(1000);
         expect(mockReload).toHaveBeenCalled();

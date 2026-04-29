@@ -9,7 +9,8 @@ vi.mock('../../../shared/api/uiStore', () => ({
     useUiStore: {
         getState: () => ({
             showToast: mockShowToast,
-            showAlert: mockShowAlert
+            showAlert: mockShowAlert,
+            setActiveTab: vi.fn()
         })
     }
 }));
