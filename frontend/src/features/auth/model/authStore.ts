@@ -10,6 +10,17 @@ interface AuthStore {
     logout: () => void;
     checkConfig: () => Promise<void>;
     
+    // Server Config
+    srtStations: string[];
+    ktxStations: string[];
+    options: string[];
+    setStations: (provider: string, stations: string[]) => Promise<void>;
+    setOptions: (options: string[]) => Promise<void>;
+
+    // Logs
+    serverLogs: string[];
+    fetchLogs: () => Promise<void>;
+    
     // Telegram Settings
     tgToken: string;
     tgChatId: string;
@@ -26,6 +37,11 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     tgToken: '',
     tgChatId: '',
     showTgGuide: false,
+
+    srtStations: [],
+    ktxStations: [],
+    options: [],
+    serverLogs: [],
 
     setUserId: (userId) => set({ userId }),
     setTgField: (field, value) => set({ [field]: value } as any),
@@ -63,6 +79,11 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
                 if (data.srt_user_id) set({ userId: data.srt_user_id });
                 if (data.telegram_token) set({ tgToken: data.telegram_token });
                 if (data.telegram_chat_id) set({ tgChatId: data.telegram_chat_id });
+                set({
+                    srtStations: data.srt_stations || [],
+                    ktxStations: data.ktx_stations || [],
+                    options: data.options || []
+                });
             }
         } catch (e) {
             // Ignore initial config check errors
@@ -82,5 +103,34 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
             console.error('Failed to save telegram settings', e);
             showToast(e.message || '텔레그램 설정 실패', 'error');
         }
+    },
+
+    setStations: async (provider, stations) => {
+        try {
+            await apiFetch('/config/stations', {
+                method: 'POST',
+                body: JSON.stringify({ provider, stations })
+            });
+            if (provider === 'SRT') set({ srtStations: stations });
+            else set({ ktxStations: stations });
+        } catch (e) {}
+    },
+
+    setOptions: async (options) => {
+        try {
+            await apiFetch('/config/options', {
+                method: 'POST',
+                body: JSON.stringify({ options })
+            });
+            set({ options });
+        } catch (e) {}
+    },
+
+    fetchLogs: async () => {
+        try {
+            const res = await apiFetch('/logs?lines=100');
+            const data = await res.json();
+            set({ serverLogs: data.logs });
+        } catch (e) {}
     }
 }));
