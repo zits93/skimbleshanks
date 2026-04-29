@@ -109,15 +109,11 @@ export const useRailStore = create<RailStore>((set, get) => ({
                     disability1to3: dis1to3, disability4to6: dis4to6, provider: 'SRT' 
                 })
             });
-            if (res.ok) {
-                const data = await res.json();
-                set({ trains: data.trains });
-                if (data.trains.length === 0) showToast('조회 결과가 없습니다.', 'error');
-            } else {
-                showToast('조회 중 오류 발생', 'error');
-            }
-        } catch (e) {
-            showToast('서버 연결 오류', 'error');
+            const data = await res.json();
+            set({ trains: data.trains });
+            if (data.trains.length === 0) showToast('조회 결과가 없습니다.', 'error');
+        } catch (e: any) {
+            showToast(e.message || '서버 연결 오류', 'error');
         } finally {
             set({ searching: false });
         }
@@ -165,13 +161,6 @@ export const useRailStore = create<RailStore>((set, get) => ({
 
                 if (!get().autoReserveActive) return;
 
-                if (!res.ok) {
-                    const errData = await res.json().catch(() => ({ detail: '서버 응답 오류' }));
-                    addLog(`예매 시도 실패: ${errData.detail}`, 'error');
-                    autoTimer = setTimeout(attempt, 2000);
-                    return;
-                }
-
                 const data = await res.json();
                 if (data.success) {
                     addLog(`예매 성공! ${data.message}`, 'success');
@@ -184,8 +173,8 @@ export const useRailStore = create<RailStore>((set, get) => ({
                     set({ autoReserveActive: false });
                     showAlert('❌ 예매 실패', data.message, '🚨');
                 }
-            } catch (e) {
-                addLog('서버 연결 오류로 재시도합니다.', 'error');
+            } catch (e: any) {
+                addLog(`오류 발생: ${e.message || '서버 연결 오류'}`, 'error');
                 autoTimer = setTimeout(attempt, 3000);
             }
         };

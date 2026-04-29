@@ -34,9 +34,15 @@ app.add_middleware(
 async def verify_api_key(x_api_key: Optional[str] = Header(None)):
     if not API_KEY:
         logger.error("SKIMBLE_API_KEY is not set in environment variables.")
-        raise HTTPException(status_code=500, detail="API Key configuration error")
+        raise HTTPException(
+            status_code=500, 
+            detail={"code": "ERR_CONFIG_ERROR", "message": "API Key configuration error"}
+        )
     if x_api_key != API_KEY:
-        raise HTTPException(status_code=403, detail="Invalid or missing API Key")
+        raise HTTPException(
+            status_code=403, 
+            detail={"code": "ERR_INVALID_API_KEY", "message": "Invalid or missing API Key"}
+        )
     return x_api_key
 
 class LoginRequest(BaseModel):
@@ -67,7 +73,10 @@ async def set_telegram(req: TelegramRequest):
     if success:
         return {"message": "Telegram configured and test message sent"}
     else:
-        raise HTTPException(status_code=400, detail="Failed to configure Telegram")
+        raise HTTPException(
+            status_code=400, 
+            detail={"code": "ERR_TELEGRAM_CONFIG_FAILED", "message": "Failed to configure Telegram"}
+        )
 
 class ReserveTarget(BaseModel):
     train_name: str
@@ -101,12 +110,18 @@ async def do_login(req: LoginRequest):
         if not rail or (hasattr(rail, 'is_login') and not rail.is_login) or (hasattr(rail, 'logined') and not rail.logined):
             logger.warning(f"Login failed for {req.provider} user: {req.user_id}")
             config_store.clear_login_ok(req.provider)
-            raise HTTPException(status_code=401, detail="Login failed")
+            raise HTTPException(
+                status_code=401, 
+                detail={"code": "ERR_LOGIN_FAILED", "message": "로그인에 실패했습니다. 아이디와 비밀번호를 확인해주세요."}
+            )
         logger.info(f"Login successful for {req.provider} user: {req.user_id}")
     except Exception as e:
         logger.error(f"Login error for {req.provider} user {req.user_id}: {str(e)}")
         config_store.clear_login_ok(req.provider)
-        raise HTTPException(status_code=401, detail="Login failed")
+        raise HTTPException(
+            status_code=401, 
+            detail={"code": "ERR_LOGIN_ERROR", "message": f"로그인 중 오류가 발생했습니다: {str(e)}"}
+        )
     return {"message": "Login successful"}
 
 @app.get("/api/config", dependencies=[Depends(verify_api_key)])
@@ -139,7 +154,10 @@ async def get_stations(provider: str):
 async def search_trains(req: SearchRequest):
     rail = await _login(provider=req.provider)
     if not rail or (hasattr(rail, 'is_login') and not rail.is_login) or (hasattr(rail, 'logined') and not rail.logined):
-        raise HTTPException(status_code=401, detail="Not logged in")
+        raise HTTPException(
+            status_code=401, 
+            detail={"code": "ERR_NOT_LOGGED_IN", "message": f"{req.provider} 로그인이 필요합니다."}
+        )
 
     passengers = rail_service.build_passengers(
         req.adults, req.children, req.seniors, req.disability1to3, req.disability4to6
@@ -175,7 +193,10 @@ async def search_trains(req: SearchRequest):
 async def reserve_train(req: ReserveRequest):
     rail = await _login(provider=req.provider)
     if not rail or (hasattr(rail, 'is_login') and not rail.is_login) or (hasattr(rail, 'logined') and not rail.logined):
-        raise HTTPException(status_code=401, detail="Not logged in")
+        raise HTTPException(
+            status_code=401, 
+            detail={"code": "ERR_NOT_LOGGED_IN", "message": f"{req.provider} 로그인이 필요합니다."}
+        )
 
     passengers = rail_service.build_passengers(
         req.adults, req.children, req.seniors, req.disability1to3, req.disability4to6
