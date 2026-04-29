@@ -29,7 +29,7 @@ export default function LoginPage() {
             style={{ maxWidth: '420px', margin: '5vh auto 0' }}
         >
             <div className="glass login-card">
-                <form onSubmit={handleLogin}>
+                <form onSubmit={handleLogin} data-testid="login-form">
                     <div className="input-group">
                         <label>SRT 서비스 아이디</label>
                         <input value={userId} onChange={e => setUserId(e.target.value)} placeholder="아이디 입력" required />

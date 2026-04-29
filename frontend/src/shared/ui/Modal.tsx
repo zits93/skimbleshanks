@@ -28,6 +28,7 @@ export function Modal() {
                 exit={{ opacity: 0 }}
                 className="modal-overlay" 
                 onClick={hideModal}
+                data-testid="modal-overlay"
             >
                 <motion.div 
                     initial={{ scale: 0.9, y: 20 }}
@@ -35,6 +36,7 @@ export function Modal() {
                     exit={{ scale: 0.9, y: 20 }}
                     className="modal-content glass" 
                     onClick={e => e.stopPropagation()}
+                    data-testid="modal-content"
                 >
                     <div className="modal-icon">{modal.icon}</div>
                     <h3>{modal.title}</h3>

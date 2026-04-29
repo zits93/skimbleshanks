@@ -20,8 +20,8 @@ export function SearchForm({ stations }: { stations: string[] }) {
         <div className="glass search-panel">
             <div className="station-grid">
                 <div className="input-group">
-                    <label>출발역</label>
-                    <select value={dep} onChange={e => setSearchField('dep', e.target.value)}>
+                    <label htmlFor="dep-select">출발역</label>
+                    <select id="dep-select" value={dep} onChange={e => setSearchField('dep', e.target.value)}>
                         {stations.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
                 </div>
@@ -29,24 +29,25 @@ export function SearchForm({ stations }: { stations: string[] }) {
                     <ArrowLeftRight size={20} strokeWidth={2.5} />
                 </button>
                 <div className="input-group">
-                    <label>도착역</label>
-                    <select value={arr} onChange={e => setSearchField('arr', e.target.value)}>
+                    <label htmlFor="arr-select">도착역</label>
+                    <select id="arr-select" value={arr} onChange={e => setSearchField('arr', e.target.value)}>
                         {stations.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
                 </div>
             </div>
             <div className="datetime-select">
                 <div className="input-group">
-                    <label>출발일</label>
+                    <label htmlFor="date-input">출발일</label>
                     <input 
+                        id="date-input"
                         type="date" 
                         value={`${date.slice(0,4)}-${date.slice(4,6)}-${date.slice(6,8)}`} 
                         onChange={e => setSearchField('date', e.target.value.replace(/-/g,''))}
                     />
                 </div>
                 <div className="input-group">
-                    <label>출발 시간</label>
-                    <select value={time} onChange={e => setSearchField('time', e.target.value)}>
+                    <label htmlFor="time-select">출발 시간</label>
+                    <select id="time-select" value={time} onChange={e => setSearchField('time', e.target.value)}>
                         {Array.from({length:24},(_, i) => String(i).padStart(2,'0')).map(h => (
                             <option key={h} value={`${h}0000`}>{h}시 이후</option>
                         ))}

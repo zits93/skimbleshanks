@@ -19,7 +19,7 @@ export function PassengerSelect({ label, value, onChange }: PassengerSelectProps
                 border: '1px solid rgba(255,255,255,0.1)'
             }}>
                 <button 
-                    onClick={() => onChange(Math.max(0, value - 1))}
+                    onClick={() => value > 0 && onChange(value - 1)}
                     style={{width: '36px', height: '36px', border: 'none', background: 'transparent', color: '#fff', cursor: 'pointer', fontSize: '1.2rem'}}
                 >-</button>
                 <div style={{
@@ -32,7 +32,7 @@ export function PassengerSelect({ label, value, onChange }: PassengerSelectProps
                     textShadow: value > 0 ? '0 0 10px var(--primary-glow)' : 'none'
                 }}>{value}</div>
                 <button 
-                    onClick={() => onChange(Math.min(9, value + 1))}
+                    onClick={() => value < 9 && onChange(value + 1)}
                     style={{width: '36px', height: '36px', border: 'none', background: 'transparent', color: '#fff', cursor: 'pointer', fontSize: '1.2rem'}}
                 >+</button>
             </div>

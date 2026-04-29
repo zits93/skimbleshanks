@@ -51,7 +51,7 @@ export function TelegramSettings() {
                 </div>
             )}
 
-            <form onSubmit={handleTgSubmit}>
+            <form onSubmit={handleTgSubmit} data-testid="tg-form">
                 <div className="input-group">
                     <label>봇 토큰 (Bot Token)</label>
                     <input value={tgToken} onChange={e => setTgField('tgToken', e.target.value)} placeholder="123456:ABC-DEF..." required/>
