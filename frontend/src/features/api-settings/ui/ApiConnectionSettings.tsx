@@ -5,11 +5,10 @@ import { useUiStore } from '../../../shared/api/uiStore';
 export function ApiConnectionSettings() {
     const { showToast } = useUiStore();
     const [baseUrl, setBaseUrl] = useState(localStorage.getItem('skimbleshanks_api_base') || '');
-    const [apiKey, setApiKey] = useState(localStorage.getItem('skimbleshanks_api_key') || '');
+    const [apiKey, setApiKey] = useState('');
 
     const handleSave = () => {
         localStorage.setItem('skimbleshanks_api_base', baseUrl);
-        localStorage.setItem('skimbleshanks_api_key', apiKey);
         showToast('설정이 저장되었습니다. 반영을 위해 새로고침합니다.', 'success');
         setTimeout(() => window.location.reload(), 1000);
     };
@@ -69,7 +68,7 @@ export function ApiConnectionSettings() {
             </div>
             
             <div style={{ fontSize: '0.75rem', opacity: 0.5, marginTop: '1.2rem', textAlign: 'center', lineHeight: 1.4 }}>
-                🔒 입력하신 API 키 정보는 브라우저에 저장되며,<br/>서버 데이터베이스에는 저장되지 않습니다.
+                🔒 API 키는 브라우저에 영구 저장되지 않으며, 현재 실행 중인 세션에서만 사용됩니다.<br/>서버 데이터베이스에도 저장되지 않습니다.
             </div>
         </div>
     );
