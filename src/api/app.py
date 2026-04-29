@@ -66,6 +66,12 @@ class TelegramRequest(BaseModel):
     token: str
     chat_id: str
 
+class CardConfigRequest(BaseModel):
+    number: str
+    password: str
+    birthday: str
+    expire: str
+
 @app.post("/api/telegram", dependencies=[Depends(verify_api_key)])
 async def set_telegram(req: TelegramRequest):
     from src.services.notifications import configure_telegram
@@ -76,6 +82,23 @@ async def set_telegram(req: TelegramRequest):
         raise HTTPException(
             status_code=400, 
             detail={"code": "ERR_TELEGRAM_CONFIG_FAILED", "message": "Failed to configure Telegram"}
+        )
+
+@app.post("/api/config/card", dependencies=[Depends(verify_api_key)])
+async def save_card_config(req: CardConfigRequest):
+    try:
+        config_store.save_card({
+            "number": req.number,
+            "password": req.password,
+            "birthday": req.birthday,
+            "expire": req.expire
+        })
+        return {"message": "Card configuration saved successfully"}
+    except Exception as e:
+        logger.error(f"Failed to save card config: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail={"code": "ERR_SAVE_CONFIG_FAILED", "message": "카드 정보 저장에 실패했습니다."}
         )
 
 class ReserveTarget(BaseModel):
@@ -225,18 +248,26 @@ async def reserve_train(req: ReserveRequest):
                 logger.info(msg)
 
                 if req.auto_pay and not getattr(reserve_info, 'is_waiting', False):
-                    if req.card_number and req.card_password and req.card_birthday and req.card_expire:
+                    # Prefer stored card info from config_store
+                    card_info = config_store.get_card_payment_info()
+                    
+                    # If not in store, use from request (if provided)
+                    c_num = card_info[0] if card_info else req.card_number.get_secret_value()
+                    c_pw = card_info[1] if card_info else req.card_password.get_secret_value()
+                    c_birth = card_info[2] if card_info else req.card_birthday
+                    c_exp = card_info[3] if card_info else req.card_expire.get_secret_value()
+
+                    if c_num and c_pw and c_birth and c_exp:
                         logger.info(f"Attempting auto-payment for {reserve_info}")
-                        birthday = req.card_birthday
                         paid = await run_in_threadpool(
                             rail.pay_with_card,
                             reserve_info,
-                            req.card_number.get_secret_value(),
-                            req.card_password.get_secret_value(),
-                            birthday,
-                            req.card_expire.get_secret_value(),
+                            c_num,
+                            c_pw,
+                            c_birth,
+                            c_exp,
                             0,
-                            "J" if len(birthday) == 6 else "S",
+                            "J" if len(c_birth) == 6 else "S",
                         )
                         if paid:
                             msg += " (결제 완료)"

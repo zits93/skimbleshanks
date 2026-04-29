@@ -17,7 +17,7 @@ const getApiBase = () => {
 };
 
 const API_BASE = getApiBase();
-const API_KEY = localStorage.getItem('skimbleshanks_api_key') || 'your-secret-key';
+const API_KEY = localStorage.getItem('skimbleshanks_api_key') || '';
 
 export async function apiFetch(endpoint: string, options: RequestInit = {}): Promise<Response> {
     const headers = {
