@@ -25,27 +25,37 @@ describe('TrainList', () => {
         }
     ];
 
-    it('should render empty state message', () => {
-        (useRailStore as any).mockReturnValue({
+    beforeEach(() => {
+        vi.clearAllMocks();
+        (useRailStore as any).mockImplementation(() => ({
             trains: [],
             selectedTargets: [],
-            autoReserveActive: false
-        });
+            autoReserveActive: false,
+            autoReserveAttempts: 0,
+            toggleTarget: mockToggleTarget,
+            bulkToggleTarget: mockBulkToggleTarget,
+            startAutoReserve: mockStartAutoReserve,
+            stopAutoReserve: mockStopAutoReserve
+        }));
+    });
 
+    it('should render empty state message', () => {
+        // Uses default from beforeEach
         render(<TrainList />);
         expect(screen.getByText(/열차를 조회해주세요/i)).toBeDefined();
     });
 
     it('should render train list and handle toggles', () => {
-        (useRailStore as any).mockReturnValue({
+        (useRailStore as any).mockImplementation(() => ({
             trains: mockTrains,
             selectedTargets: [],
             autoReserveActive: false,
+            autoReserveAttempts: 0,
             toggleTarget: mockToggleTarget,
             bulkToggleTarget: mockBulkToggleTarget,
             startAutoReserve: mockStartAutoReserve,
             stopAutoReserve: mockStopAutoReserve
-        });
+        }));
 
         render(<TrainList />);
         
@@ -56,36 +66,50 @@ describe('TrainList', () => {
         expect(mockToggleTarget).toHaveBeenCalledWith('SRT 301', 'GENERAL_FIRST');
     });
 
-    it('should handle auto reserve buttons', () => {
-        (useRailStore as any).mockReturnValue({
+    it('should show waiting status when a sold out seat is selected', () => {
+        (useRailStore as any).mockImplementation(() => ({
             trains: mockTrains,
-            selectedTargets: [{ train_name: 'SRT 301', seat_type: '일반실' }],
+            selectedTargets: [{ train_name: 'SRT 301', seat_type: 'SPECIAL_ONLY' }],
             autoReserveActive: false,
-            startAutoReserve: mockStartAutoReserve,
-            stopAutoReserve: mockStopAutoReserve,
+            autoReserveAttempts: 0,
             toggleTarget: mockToggleTarget,
-            bulkToggleTarget: mockBulkToggleTarget
-        });
+            bulkToggleTarget: mockBulkToggleTarget,
+            startAutoReserve: vi.fn(),
+            stopAutoReserve: vi.fn()
+        }));
 
         render(<TrainList />);
+        expect(screen.getByText(/대기 중/i)).toBeDefined();
+    });
+
+    it('should handle auto reserve buttons', () => {
+        const baseMock = {
+            trains: mockTrains,
+            selectedTargets: [{ train_name: 'SRT 301', seat_type: 'GENERAL_FIRST' }],
+            autoReserveActive: false,
+            autoReserveAttempts: 0,
+            toggleTarget: mockToggleTarget,
+            bulkToggleTarget: mockBulkToggleTarget,
+            startAutoReserve: mockStartAutoReserve,
+            stopAutoReserve: mockStopAutoReserve
+        };
+
+        (useRailStore as any).mockImplementation(() => baseMock);
+
+        const { rerender } = render(<TrainList />);
         
         const startBtn = screen.getByRole('button', { name: /자동 예매 시작/i });
         fireEvent.click(startBtn);
         expect(mockStartAutoReserve).toHaveBeenCalled();
 
         // Switch to active state
-        (useRailStore as any).mockReturnValue({
-            trains: mockTrains,
-            selectedTargets: [{ train_name: 'SRT 301', seat_type: '일반실' }],
+        (useRailStore as any).mockImplementation(() => ({
+            ...baseMock,
             autoReserveActive: true,
-            startAutoReserve: mockStartAutoReserve,
-            stopAutoReserve: mockStopAutoReserve,
-            toggleTarget: mockToggleTarget,
-            bulkToggleTarget: mockBulkToggleTarget,
             autoReserveAttempts: 5
-        });
+        }));
 
-        render(<TrainList />);
+        rerender(<TrainList />);
         const stopBtn = screen.getByRole('button', { name: /중지/i });
         fireEvent.click(stopBtn);
         expect(mockStopAutoReserve).toHaveBeenCalled();

@@ -48,22 +48,34 @@ describe('SearchForm', () => {
         expect(mockSetSearchField).toHaveBeenCalledWith('dep', '부산');
     });
 
-    it('should swap stations when clicking swap button', () => {
+    it('should swap stations', () => {
         render(<SearchForm stations={stations} />);
-        
         const swapBtn = screen.getByTitle('출발/도착역 전환');
         fireEvent.click(swapBtn);
-        
         expect(mockSetSearchField).toHaveBeenCalledWith('dep', '부산');
         expect(mockSetSearchField).toHaveBeenCalledWith('arr', '수서');
     });
 
-    it('should call doSearch when clicking search button', () => {
+    it('should handle field changes', () => {
         render(<SearchForm stations={stations} />);
         
-        const searchBtn = screen.getByText('열차 조회');
+        const depSelect = screen.getByLabelText(/출발역/i);
+        fireEvent.change(depSelect, { target: { value: '부산' } });
+        expect(mockSetSearchField).toHaveBeenCalledWith('dep', '부산');
+
+        const dateInput = screen.getByLabelText(/출발일/i);
+        fireEvent.change(dateInput, { target: { value: '2026-05-01' } });
+        expect(mockSetSearchField).toHaveBeenCalledWith('date', '20260501');
+
+        const timeSelect = screen.getByLabelText(/출발 시간/i);
+        fireEvent.change(timeSelect, { target: { value: '140000' } });
+        expect(mockSetSearchField).toHaveBeenCalledWith('time', '140000');
+    });
+
+    it('should handle search click', () => {
+        render(<SearchForm stations={stations} />);
+        const searchBtn = screen.getByText(/열차 조회/i);
         fireEvent.click(searchBtn);
-        
         expect(mockDoSearch).toHaveBeenCalled();
     });
 });
