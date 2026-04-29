@@ -232,8 +232,8 @@ async def reserve_train(req: ReserveRequest):
 
         return {"success": False, "message": "Seat not available.", "retry": True}
     except Exception as e:
-        logger.error(f"Reservation error: {str(e)}")
-        return {"success": False, "message": str(e), "retry": True}
+        logger.exception("Reservation error")
+        return {"success": False, "message": "An internal error occurred.", "retry": True}
 
 # Serve frontend static files if they exist
 if os.path.exists("frontend/dist"):
