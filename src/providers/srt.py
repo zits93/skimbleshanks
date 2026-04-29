@@ -728,9 +728,7 @@ class SRT:
         self.membership_name = user_info["CUST_NM"]
         self.phone_number = user_info["MBL_PHONE"]
 
-        print(
-            f"로그인 성공: {self.membership_name} (멤버십번호: {self.membership_number}, 전화번호: {self.phone_number})"
-        )
+        print("로그인 성공")
         return True
 
     def logout(self) -> bool:
