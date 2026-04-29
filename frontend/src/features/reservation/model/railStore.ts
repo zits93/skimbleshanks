@@ -30,6 +30,7 @@ interface RailStore {
     // Setters
     setSearchField: (field: string, value: any) => void;
     setCardField: (field: string, value: any) => void;
+    saveCardInfo: () => Promise<void>;
     toggleTarget: (trainName: string, seatType: string) => void;
     bulkToggleTarget: (seatType: string) => void;
     
@@ -64,11 +65,24 @@ export const useRailStore = create<RailStore>((set, get) => ({
     cardExp: localStorage.getItem('skimbleshanks_card_exp') || '',
 
     setSearchField: (field, value) => set({ [field]: value } as any),
-    setCardField: (field, value) => {
-        set({ [field]: value } as any);
-        if (field.startsWith('card')) {
-            const storageKey = `skimbleshanks_${field.replace(/[A-Z]/g, (l) => `_${l.toLowerCase()}`)}`;
-            localStorage.setItem(storageKey, value);
+    setCardField: (field, value) => set({ [field]: value } as any),
+    
+    saveCardInfo: async () => {
+        const { cardNum, cardPw, cardBirth, cardExp } = get();
+        const { showToast } = useUiStore.getState();
+        try {
+            await apiFetch('/config/card', {
+                method: 'POST',
+                body: JSON.stringify({ 
+                    number: cardNum, 
+                    password: cardPw, 
+                    birthday: cardBirth, 
+                    expire: cardExp 
+                })
+            });
+            showToast('카드 정보가 서버에 안전하게 저장되었습니다.', 'success');
+        } catch (e: any) {
+            showToast(e.message || '카드 정보 저장 실패', 'error');
         }
     },
 
@@ -151,11 +165,8 @@ export const useRailStore = create<RailStore>((set, get) => ({
                         adults: state.adults, children: state.children, seniors: state.seniors,
                         disability1to3: state.dis1to3, disability4to6: state.dis4to6,
                         targets: state.selectedTargets, auto_pay: true,
-                        card_number: state.cardNum, 
-                        card_password: state.cardPw,
-                        card_birthday: state.cardBirth, 
-                        card_expire: state.cardExp,
                         provider: 'SRT'
+                        // card info is now pulled from backend config_store preferentially
                     })
                 });
 
