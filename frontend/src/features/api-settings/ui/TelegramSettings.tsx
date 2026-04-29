@@ -26,15 +26,28 @@ export function TelegramSettings() {
             </div>
 
             {showTgGuide && (
-                <div style={{background: 'rgba(139, 92, 246, 0.05)', border: '1px solid rgba(139, 92, 246, 0.2)', borderRadius: '1rem', padding: '1rem', marginBottom: '1.5rem', fontSize: '0.9rem', lineHeight: '1.6'}}>
-                    <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', color: 'var(--primary)'}}>
-                        <Info size={16} /> <strong>설정 방법</strong>
+                <div style={{background: 'rgba(139, 92, 246, 0.05)', border: '1px solid rgba(139, 92, 246, 0.2)', borderRadius: '1rem', padding: '1.5rem', marginBottom: '1.5rem', fontSize: '0.9rem', lineHeight: '1.7'}}>
+                    <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', color: 'var(--primary)'}}>
+                        <Info size={18} /> <strong>텔레그램 알림 상세 설정 가이드</strong>
                     </div>
-                    <ol style={{margin: 0, paddingLeft: '1.2rem', color: 'rgba(255,255,255,0.7)'}}>
-                        <li><strong>@BotFather</strong>에게 메시지를 보내 봇을 생성하고 토큰을 받으세요.</li>
-                        <li><strong>@userinfobot</strong>을 통해 자신의 Chat ID를 확인하세요.</li>
-                        <li>정보를 입력하고 저장하면 예매 성공 시 알림을 받을 수 있습니다.</li>
-                    </ol>
+                    <div style={{display: 'flex', flexDirection: 'column', gap: '1rem', color: 'rgba(255,255,255,0.8)'}}>
+                        <div>
+                            <strong style={{color: '#fff', display: 'block', marginBottom: '0.3rem'}}>1. 봇 생성 및 토큰 받기</strong>
+                            텔레그램에서 <strong>@BotFather</strong>를 검색하여 대화를 시작하세요. <br/>
+                            <code>/newbot</code> 명령어를 입력한 뒤, 봇의 이름과 아이디(반드시 _bot으로 끝남)를 설정하면 <strong>HTTP API Token</strong>이 발급됩니다.
+                        </div>
+                        <div>
+                            <strong style={{color: '#fff', display: 'block', marginBottom: '0.3rem'}}>2. 내 채팅 ID 확인하기</strong>
+                            텔레그램에서 <strong>@userinfobot</strong>을 검색하여 대화를 시작하면 본인의 고유한 <strong>Chat ID</strong>(숫자)를 즉시 확인할 수 있습니다.
+                        </div>
+                        <div>
+                            <strong style={{color: '#fff', display: 'block', marginBottom: '0.3rem'}}>3. 봇 활성화 (필수!)</strong>
+                            방금 생성한 본인의 봇을 검색하여 대화를 시작하고 <code>/start</code>를 한 번 보내주세요. 이 과정을 거쳐야만 봇이 메시지를 보낼 수 있습니다.
+                        </div>
+                        <div style={{fontSize: '0.8rem', color: 'var(--primary)', opacity: 0.8, borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '0.8rem'}}>
+                            ※ 설정 저장 후 '테스트' 버튼을 눌러 메시지가 정상적으로 오는지 확인해보세요.
+                        </div>
+                    </div>
                 </div>
             )}
 

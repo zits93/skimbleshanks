@@ -49,7 +49,7 @@ export default function MainPage() {
                         
                         <div className="glass" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 2rem', opacity: 0.8 }}>
                             <span style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                <Terminal size={16} /> 개발자 모드
+                                <Terminal size={16} /> 개발자 모드 (텔레그램)
                             </span>
                             <label className="switch">
                                 <input type="checkbox" checked={devMode} onChange={e => setDevMode(e.target.checked)} />
