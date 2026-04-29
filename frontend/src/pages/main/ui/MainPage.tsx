@@ -4,7 +4,9 @@ import { SearchForm } from '../../../widgets/search-form/ui/SearchForm';
 import { TrainList } from '../../../widgets/train-list/ui/TrainList';
 import { CardSettings } from '../../../features/api-settings/ui/CardSettings';
 import { TelegramSettings } from '../../../features/api-settings/ui/TelegramSettings';
-import { Settings, Search, Terminal } from 'lucide-react';
+import { StationSettings } from '../../../features/api-settings/ui/StationSettings';
+import { LogViewer } from '../../../widgets/log-viewer/ui/LogViewer';
+import { Settings, Search, Terminal, Activity } from 'lucide-react';
 import { useUiStore } from '../../../shared/api/uiStore';
 import '../../../app/style.css';
 
@@ -19,15 +21,18 @@ export default function MainPage() {
             <div className="nav-tabs-wrapper">
                 <div className="nav-tabs">
                     <div className="active-bg" style={{
-                        width: '150px',
-                        transform: activeTab === 'search' ? 'translateX(0)' : 'translateX(150px)',
+                        width: '120px',
+                        transform: activeTab === 'search' ? 'translateX(0)' : activeTab === 'settings' ? 'translateX(120px)' : 'translateX(240px)',
                         left: '0.4rem'
                     }}></div>
-                    <button className={activeTab === 'search' ? 'active' : ''} onClick={() => setActiveTab('search')} style={{ width: '150px' }}>
+                    <button className={activeTab === 'search' ? 'active' : ''} onClick={() => setActiveTab('search')} style={{ width: '120px' }}>
                         <Search size={20} /> 예매
                     </button>
-                    <button className={activeTab === 'settings' ? 'active' : ''} onClick={() => setActiveTab('settings')} style={{ width: '150px' }}>
+                    <button className={activeTab === 'settings' ? 'active' : ''} onClick={() => setActiveTab('settings')} style={{ width: '120px' }}>
                         <Settings size={20} /> 설정
+                    </button>
+                    <button className={activeTab === 'logs' ? 'active' : ''} onClick={() => setActiveTab('logs')} style={{ width: '120px' }}>
+                        <Activity size={20} /> 로그
                     </button>
                 </div>
             </div>
@@ -44,21 +49,29 @@ export default function MainPage() {
                         <SearchForm stations={STATIONS} />
                         <TrainList />
                     </div>
-                ) : (
-                    <div style={{ maxWidth: '600px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                        <CardSettings />
-                        
-                        <div className="glass" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 2rem', opacity: 0.8 }}>
-                            <span style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                <Terminal size={16} /> 개발자 모드 (텔레그램)
-                            </span>
-                            <label className="switch">
-                                <input type="checkbox" checked={devMode} onChange={e => setDevMode(e.target.checked)} />
-                                <span className="slider round"></span>
-                            </label>
+                ) : activeTab === 'settings' ? (
+                    <div style={{ maxWidth: '800px', margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                            <CardSettings />
+                            <StationSettings provider="SRT" />
                         </div>
-
-                        {devMode && <TelegramSettings />}
+                        
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                            <div className="glass" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 2rem', opacity: 0.8 }}>
+                                <span style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    <Terminal size={16} /> 개발자 모드 (텔레그램)
+                                </span>
+                                <label className="switch">
+                                    <input type="checkbox" checked={devMode} onChange={e => setDevMode(e.target.checked)} />
+                                    <span className="slider round"></span>
+                                </label>
+                            </div>
+                            {devMode && <TelegramSettings />}
+                        </div>
+                    </div>
+                ) : (
+                    <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+                        <LogViewer />
                     </div>
                 )}
             </motion.div>

@@ -72,6 +72,13 @@ class CardConfigRequest(BaseModel):
     birthday: str
     expire: str
 
+class StationConfigRequest(BaseModel):
+    provider: str
+    stations: List[str]
+
+class OptionsConfigRequest(BaseModel):
+    options: List[str]
+
 @app.post("/api/telegram", dependencies=[Depends(verify_api_key)])
 async def set_telegram(req: TelegramRequest):
     from src.services.notifications import configure_telegram
@@ -100,6 +107,34 @@ async def save_card_config(req: CardConfigRequest):
             status_code=500,
             detail={"code": "ERR_SAVE_CONFIG_FAILED", "message": "카드 정보 저장에 실패했습니다."}
         )
+
+@app.post("/api/config/stations", dependencies=[Depends(verify_api_key)])
+async def save_stations_config(req: StationConfigRequest):
+    try:
+        config_store.save_station(req.provider, req.stations)
+        return {"message": "Station preferences saved"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/config/options", dependencies=[Depends(verify_api_key)])
+async def save_options_config(req: OptionsConfigRequest):
+    try:
+        config_store.set_options(req.options)
+        return {"message": "Option preferences saved"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/logs", dependencies=[Depends(verify_api_key)])
+async def get_logs(lines: int = 100):
+    from src.services.logger import LOG_FILE
+    if not os.path.exists(LOG_FILE):
+        return {"logs": []}
+    try:
+        with open(LOG_FILE, "r", encoding="utf-8") as f:
+            all_lines = f.readlines()
+            return {"logs": all_lines[-lines:]}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 class ReserveTarget(BaseModel):
     train_name: str
@@ -156,6 +191,9 @@ async def get_config():
         "ktx_logged_in": config_store.has_login("KTX"),
         "srt_user_id": srt_id,
         "ktx_user_id": ktx_id,
+        "srt_stations": config_store.get_station_value("SRT").split(",") if config_store.get_station_value("SRT") else [],
+        "ktx_stations": config_store.get_station_value("KTX").split(",") if config_store.get_station_value("KTX") else [],
+        "options": config_store.get_options(),
     }
 
 @app.get("/api/stations/{provider}", dependencies=[Depends(verify_api_key)])
