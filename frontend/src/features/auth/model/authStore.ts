@@ -32,19 +32,20 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 
     login: async (password, provider) => {
         set({ loading: true });
+        const { showToast } = (await import('../../../shared/api/uiStore')).useUiStore.getState();
         try {
             const { userId } = get();
-            const res = await apiFetch('/login', {
+            await apiFetch('/login', {
                 method: 'POST',
                 body: JSON.stringify({ user_id: userId, password, provider })
             });
-            if (res.ok) {
-                set({ isLoggedIn: true, loading: false });
-                localStorage.setItem('skimbleshanks_user_id', userId);
-                return true;
-            }
-        } catch (e) {
+            set({ isLoggedIn: true, loading: false });
+            localStorage.setItem('skimbleshanks_user_id', userId);
+            showToast('로그인 성공!', 'success');
+            return true;
+        } catch (e: any) {
             console.error('Login failed', e);
+            showToast(e.message || '로그인 실패', 'error');
         }
         set({ loading: false });
         return false;
@@ -70,16 +71,16 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 
     saveTelegramSettings: async () => {
         const { tgToken, tgChatId } = get();
+        const { showToast } = (await import('../../../shared/api/uiStore')).useUiStore.getState();
         try {
-            const res = await apiFetch('/config/telegram', {
+            await apiFetch('/telegram', {
                 method: 'POST',
                 body: JSON.stringify({ token: tgToken, chat_id: tgChatId })
             });
-            if (res.ok) {
-                // Success
-            }
-        } catch (e) {
+            showToast('텔레그램 설정이 완료되었습니다.', 'success');
+        } catch (e: any) {
             console.error('Failed to save telegram settings', e);
+            showToast(e.message || '텔레그램 설정 실패', 'error');
         }
     }
 }));
