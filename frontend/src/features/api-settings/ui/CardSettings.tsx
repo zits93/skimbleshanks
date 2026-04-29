@@ -3,22 +3,19 @@ import { useRailStore } from '../../reservation/model/railStore';
 
 export function CardSettings() {
     const { 
-        cardNum, cardPw, cardBirth, cardExp, autoPayActive,
+        cardNum, cardPw, cardBirth, cardExp,
         setCardField 
     } = useRailStore();
 
     return (
         <div className="glass" style={{padding: '2rem'}}>
-            <h3 style={{display: 'flex', alignItems: 'center', gap: '0.8rem', marginBottom: '1.5rem', fontSize: '1.2rem', color: 'var(--primary)'}}>
+            <h3 style={{display: 'flex', alignItems: 'center', gap: '0.8rem', marginBottom: '1rem', fontSize: '1.2rem', color: 'var(--primary)'}}>
                 <CreditCard size={20} /> 자동 결제 카드 정보
             </h3>
-            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', background: 'rgba(255,255,255,0.03)', padding: '1rem', borderRadius: '1rem'}}>
-                <span style={{fontSize: '0.9rem', fontWeight: 600}}>자동 결제 활성화</span>
-                <label className="switch">
-                    <input type="checkbox" checked={autoPayActive} onChange={e => setCardField('autoPayActive', e.target.checked)} />
-                    <span className="slider"></span>
-                </label>
-            </div>
+            <p style={{fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1.5rem', lineHeight: '1.5'}}>
+                정보를 입력하면 예매 성공 시 즉시 결제가 진행됩니다. <br/>
+                결제 실패 시 예매가 취소될 수 있으니 정확한 정보를 입력해주세요.
+            </p>
             
             <div className="input-group">
                 <label>카드 번호</label>

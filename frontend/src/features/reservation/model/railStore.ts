@@ -21,12 +21,10 @@ interface RailStore {
     dis1to3: number;
     dis4to6: number;
 
-    // Card Info (Stored in LocalStorage for persistence)
     cardNum: string;
     cardPw: string;
     cardBirth: string;
     cardExp: string;
-    autoPayActive: boolean;
 
     // Setters
     setSearchField: (field: string, value: any) => void;
@@ -62,7 +60,6 @@ export const useRailStore = create<RailStore>((set, get) => ({
     cardPw: localStorage.getItem('skimbleshanks_card_pw') || '',
     cardBirth: localStorage.getItem('skimbleshanks_card_birth') || '',
     cardExp: localStorage.getItem('skimbleshanks_card_exp') || '',
-    autoPayActive: true,
 
     setSearchField: (field, value) => set({ [field]: value } as any),
     setCardField: (field, value) => {
@@ -122,13 +119,13 @@ export const useRailStore = create<RailStore>((set, get) => ({
     },
 
     startAutoReserve: () => {
-        const { selectedTargets, autoPayActive, cardNum, cardPw, cardBirth, cardExp } = get();
+        const { selectedTargets, cardNum, cardPw, cardBirth, cardExp } = get();
         const { showAlert } = useUiStore.getState();
         const { addLog, clearLogs } = useLogStore.getState();
 
         if (selectedTargets.length === 0) return showAlert('알림', '예매할 열차를 먼저 선택해주세요.', '⚠️');
-        if (autoPayActive && (!cardNum || !cardPw || !cardBirth || !cardExp)) {
-            return showAlert('알림', '자동 결제를 사용하려면 카드 정보를 먼저 입력해주세요.', '💳', 3000, '설정하러 가기');
+        if (!cardNum || !cardPw || !cardBirth || !cardExp) {
+            return showAlert('알림', '자동 결제를 위한 카드 정보를 모두 입력해주세요.', '💳', 3000, '설정하러 가기');
         }
 
         clearLogs();
@@ -150,11 +147,11 @@ export const useRailStore = create<RailStore>((set, get) => ({
                         dep: state.dep, arr: state.arr, date: state.date, time: state.time,
                         adults: state.adults, children: state.children, seniors: state.seniors,
                         disability1to3: state.dis1to3, disability4to6: state.dis4to6,
-                        targets: state.selectedTargets, auto_pay: state.autoPayActive,
-                        card_number: state.autoPayActive ? state.cardNum : '', 
-                        card_password: state.autoPayActive ? state.cardPw : '',
-                        card_birthday: state.autoPayActive ? state.cardBirth : '', 
-                        card_expire: state.autoPayActive ? state.cardExp : '',
+                        targets: state.selectedTargets, auto_pay: true,
+                        card_number: state.cardNum, 
+                        card_password: state.cardPw,
+                        card_birthday: state.cardBirth, 
+                        card_expire: state.cardExp,
                         provider: 'SRT'
                     })
                 });
