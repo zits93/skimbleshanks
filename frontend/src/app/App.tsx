@@ -66,13 +66,13 @@ function AppContent() {
         }, 1000);
     };
 
-    const spawnSteam = (x: number, y: number, dir: number) => {
-        const newSteams: Steam[] = Array.from({ length: 3 }).map((_) => ({
+    const spawnSteam = (x: number, y: number, dir: number, count = 3) => {
+        const newSteams: Steam[] = Array.from({ length: count }).map((_) => ({
             id: ++steamIdRef.current,
             x: x + (Math.random() - 0.5) * 20,
             y: y + (Math.random() - 0.5) * 20,
-            vx: -dir * (Math.random() * 100 + 50),
-            scale: Math.random() * 0.5 + 0.5
+            vx: -dir * (Math.random() * 150 + 80),
+            scale: Math.random() * 0.7 + 0.5
         }));
         setSteams(prev => [...prev, ...newSteams]);
         setTimeout(() => {
@@ -81,16 +81,16 @@ function AppContent() {
     };
 
     const handleCatClick = () => {
-        boostRef.current = 40;
-        directionRef.current *= -1;
+        boostRef.current = 45;
         
-        // Spawn steam from cat position
+        // Spawn more dramatic steam from cat position
         if (catRef.current && trackRef.current) {
             const now = performance.now();
-            if (now - lastSteamSpawnRef.current > 150) {
+            if (now - lastSteamSpawnRef.current > 100) {
                 const catRect = catRef.current.getBoundingClientRect();
                 const trackRect = trackRef.current.getBoundingClientRect();
-                spawnSteam(catRect.left - trackRect.left + 40, 20, directionRef.current);
+                // Increased count for dramatic effect
+                spawnSteam(catRect.left - trackRect.left + 40, 20, directionRef.current, 8);
                 lastSteamSpawnRef.current = now;
             }
         }
@@ -148,7 +148,7 @@ function AppContent() {
                 if (directionRef.current === -1) {
                     directionRef.current = 1; 
                     if (time - lastSteamSpawnRef.current > 300) {
-                        spawnSteam(position + 40, 20, directionRef.current);
+                        spawnSteam(position + 40, 20, directionRef.current, 3);
                         lastSteamSpawnRef.current = time;
                     }
                 }
@@ -158,7 +158,7 @@ function AppContent() {
                 if (directionRef.current === 1) {
                     directionRef.current = -1; 
                     if (time - lastSteamSpawnRef.current > 300) {
-                        spawnSteam(position + 40, 20, directionRef.current);
+                        spawnSteam(position + 40, 20, directionRef.current, 3);
                         lastSteamSpawnRef.current = time;
                     }
                 }
