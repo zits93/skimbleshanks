@@ -56,7 +56,7 @@ function AppContent() {
     };
 
     const handleCatClick = () => {
-        boostRef.current = 25;
+        boostRef.current = 40;
         directionRef.current *= -1;
         if (framesRef.current) {
             framesRef.current.style.transition = 'none';
@@ -92,12 +92,12 @@ function AppContent() {
             const dt = (time - lastTime) / 1000;
             lastTime = time;
 
-            boostRef.current *= 0.92;
+            boostRef.current *= 0.96;
             if (boostRef.current < 0.1) boostRef.current = 0;
 
             const currentFPS = 14 + Math.sin(time / 1200) * 10 + Math.sin(time / 500) * 4 + boostRef.current;
-            const catSpeed = currentFPS * 6.5;
-            const trackSpeed = 90;
+            const catSpeed = currentFPS * 18.0;
+            const trackSpeed = 140;
             
             const velocity = directionRef.current === 1 ? (catSpeed - trackSpeed) : (-catSpeed - trackSpeed);
             position += velocity * dt;
