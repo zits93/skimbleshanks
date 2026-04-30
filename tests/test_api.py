@@ -4,43 +4,28 @@ from unittest.mock import patch, MagicMock
 from src.api.app import app
 
 client = TestClient(app)
-API_KEY = "your-secret-key"
 
-@pytest.fixture(autouse=True)
-def mock_api_key():
-    with patch("src.api.app.API_KEY", API_KEY):
-        yield
-
-@pytest.fixture
-def auth_headers():
-    return {"X-API-KEY": API_KEY}
-
-def test_api_unauthorized():
-    response = client.get("/api/config")
-    assert response.status_code == 403
-
-def test_api_get_config(auth_headers):
+def test_api_get_config():
     with patch("src.services.config_store.has_login", return_value=True):
-        response = client.get("/api/config", headers=auth_headers)
+        response = client.get("/api/config")
         assert response.status_code == 200
         assert response.json()["srt_logged_in"] is True
 
 @patch("src.api.app.login_client")
-def test_api_login_success(mock_login, auth_headers):
+def test_api_login_success(mock_login):
     mock_instance = MagicMock()
     mock_instance.is_login = True
     mock_login.return_value = mock_instance
     
     response = client.post(
         "/api/login", 
-        headers=auth_headers,
         json={"user_id": "test", "password": "password"}
     )
     assert response.status_code == 200
     assert response.json()["message"] == "Login successful"
 
 @patch("src.api.app._login")
-def test_api_search_trains(mock_login_helper, auth_headers):
+def test_api_search_trains(mock_login_helper):
     mock_rail = MagicMock()
     mock_rail.is_login = True
     mock_login_helper.return_value = mock_rail
@@ -57,7 +42,6 @@ def test_api_search_trains(mock_login_helper, auth_headers):
     
     response = client.post(
         "/api/search",
-        headers=auth_headers,
         json={
             "dep": "수서", "arr": "동대구", 
             "date": "20300101", "time": "120000",
@@ -70,7 +54,7 @@ def test_api_search_trains(mock_login_helper, auth_headers):
 
 @patch("src.api.app._login")
 @patch("src.api.app.send_telegram")
-def test_api_reserve_success(mock_send, mock_login_helper, auth_headers):
+def test_api_reserve_success(mock_send, mock_login_helper):
     mock_rail = MagicMock()
 
     mock_rail.is_login = True
@@ -88,7 +72,6 @@ def test_api_reserve_success(mock_send, mock_login_helper, auth_headers):
     
     response = client.post(
         "/api/reserve",
-        headers=auth_headers,
         json={
             "dep": "수서", "arr": "동대구", 
             "date": "20300101", "time": "120000",
