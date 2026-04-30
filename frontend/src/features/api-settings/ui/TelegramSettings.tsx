@@ -27,7 +27,10 @@ export function TelegramSettings() {
                 <h3 style={{display: 'flex', alignItems: 'center', gap: '0.8rem', margin: 0, fontSize: '1.2rem', color: 'var(--primary)'}}>
                     <Send size={20} /> 텔레그램 알림 설정
                 </h3>
-                <div style={{display: 'flex', gap: '0.5rem'}}>
+                <div style={{display: 'flex', gap: '0.5rem', alignItems: 'center'}}>
+                    <button onClick={() => setTgField('showTgGuide', !showTgGuide)} className="swap-btn" style={{width: 'auto', height: 'auto', padding: '0.4rem 0.8rem', borderRadius: '2rem', fontSize: '0.8rem'}}>
+                        {showTgGuide ? '가이드 닫기' : '도움말'}
+                    </button>
                     <button 
                         onClick={handleClear}
                         title="입력값 초기화"
@@ -40,14 +43,12 @@ export function TelegramSettings() {
                             borderRadius: '0.5rem',
                             display: 'flex',
                             alignItems: 'center',
+                            transition: 'all 0.2s'
                         }}
                         onMouseOver={e => e.currentTarget.style.color = '#ff4d4d'}
                         onMouseOut={e => e.currentTarget.style.color = 'var(--text-muted)'}
                     >
                         <Trash2 size={16} />
-                    </button>
-                    <button onClick={() => setTgField('showTgGuide', !showTgGuide)} className="swap-btn" style={{width: 'auto', height: 'auto', padding: '0.4rem 0.8rem', borderRadius: '2rem', fontSize: '0.8rem'}}>
-                        {showTgGuide ? '가이드 닫기' : '도움말'}
                     </button>
                 </div>
             </div>
