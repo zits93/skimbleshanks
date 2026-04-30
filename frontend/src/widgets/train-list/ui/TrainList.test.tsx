@@ -45,6 +45,18 @@ describe('TrainList', () => {
         expect(screen.getByText(/열차를 조회해주세요/i)).toBeDefined();
     });
 
+    it('should render searching state', () => {
+        (useRailStore as any).mockImplementation(() => ({
+            searching: true,
+            trains: [],
+            selectedTargets: [],
+            autoReserveActive: false
+        }));
+        
+        render(<TrainList />);
+        expect(screen.getByText(/정보를 불러오는 중/i)).toBeDefined();
+    });
+
     it('should render train list and handle toggles', () => {
         (useRailStore as any).mockImplementation(() => ({
             trains: mockTrains,
@@ -64,6 +76,14 @@ describe('TrainList', () => {
         const standardSeatBtn = screen.getByText('일반실');
         fireEvent.click(standardSeatBtn);
         expect(mockToggleTarget).toHaveBeenCalledWith('SRT 301', 'GENERAL_FIRST');
+
+        const bulkGeneralBtn = screen.getByText(/일반실 전체/i);
+        fireEvent.click(bulkGeneralBtn);
+        expect(mockBulkToggleTarget).toHaveBeenCalledWith('GENERAL_FIRST');
+
+        const bulkSpecialBtn = screen.getByText(/특실 전체/i);
+        fireEvent.click(bulkSpecialBtn);
+        expect(mockBulkToggleTarget).toHaveBeenCalledWith('SPECIAL_ONLY');
     });
 
     it('should show waiting status when a sold out seat is selected', () => {

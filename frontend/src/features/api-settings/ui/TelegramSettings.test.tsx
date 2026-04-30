@@ -59,4 +59,26 @@ describe('TelegramSettings', () => {
         fireEvent.click(guideBtn);
         expect(mockSetTgField).toHaveBeenCalledWith('showTgGuide', false);
     });
+
+    it('should clear telegram info when trash button is clicked', () => {
+        const mockClearTelegramSettings = vi.fn();
+        (useAuthStore as any).mockReturnValue({
+            tgToken: 'token123',
+            tgChatId: 'chat456',
+            showTgGuide: false,
+            setTgField: mockSetTgField,
+            saveTelegramSettings: mockSaveTelegramSettings,
+            clearTelegramSettings: mockClearTelegramSettings
+        });
+        vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+        render(<TelegramSettings />);
+        
+        const clearBtn = screen.getByTitle('입력값 초기화');
+        fireEvent.click(clearBtn);
+        
+        expect(window.confirm).toHaveBeenCalled();
+        expect(mockClearTelegramSettings).toHaveBeenCalled();
+        expect(mockShowToast).toHaveBeenCalledWith(expect.any(String), 'success');
+    });
 });

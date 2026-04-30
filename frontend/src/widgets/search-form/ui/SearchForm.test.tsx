@@ -70,6 +70,36 @@ describe('SearchForm', () => {
         const timeSelect = screen.getByLabelText(/출발 시간/i);
         fireEvent.change(timeSelect, { target: { value: '140000' } });
         expect(mockSetSearchField).toHaveBeenCalledWith('time', '140000');
+
+        const arrSelect = screen.getByLabelText(/도착역/i);
+        fireEvent.change(arrSelect, { target: { value: '부산' } });
+        expect(mockSetSearchField).toHaveBeenCalledWith('arr', '부산');
+    });
+
+    it('should handle passenger changes', () => {
+        render(<SearchForm stations={stations} />);
+        
+        // Find by text and click the '+' button in the same container
+        const increment = (label: string) => {
+            const container = screen.getByText(label).closest('div');
+            const plusBtn = container?.querySelector('button:last-child');
+            if (plusBtn) fireEvent.click(plusBtn);
+        };
+
+        increment('어른');
+        expect(mockSetSearchField).toHaveBeenCalledWith('adults', 2);
+        
+        increment('어린이');
+        expect(mockSetSearchField).toHaveBeenCalledWith('children', 1);
+
+        increment('경로');
+        expect(mockSetSearchField).toHaveBeenCalledWith('seniors', 1);
+
+        increment('장애(1-3)');
+        expect(mockSetSearchField).toHaveBeenCalledWith('dis1to3', 1);
+
+        increment('장애(4-6)');
+        expect(mockSetSearchField).toHaveBeenCalledWith('dis4to6', 1);
     });
 
     it('should handle search click', () => {

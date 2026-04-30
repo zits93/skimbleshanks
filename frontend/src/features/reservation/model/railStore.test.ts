@@ -183,4 +183,14 @@ describe('useRailStore', () => {
         
         vi.useRealTimers();
     });
+
+    it('should clear card info', () => {
+        const { setCardField, clearCardInfo } = useRailStore.getState();
+        setCardField('cardNum', '1234');
+        clearCardInfo();
+        
+        const state = useRailStore.getState();
+        expect(state.cardNum).toBe('');
+        expect(localStorage.getItem('skimbleshanks_card_num')).toBeNull();
+    });
 });

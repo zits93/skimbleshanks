@@ -96,4 +96,12 @@ describe('useAuthStore', () => {
         expect(state.tgToken).toBe('auto-token');
         expect(state.tgChatId).toBe('auto-chat');
     });
+
+    it('should clear telegram settings', () => {
+        const { setTgField, clearTelegramSettings } = useAuthStore.getState();
+        setTgField('tgToken', 'token123');
+        clearTelegramSettings();
+        
+        expect(useAuthStore.getState().tgToken).toBe('');
+    });
 });
