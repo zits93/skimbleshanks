@@ -26,16 +26,14 @@ describe('ApiConnectionSettings', () => {
         localStorage.clear();
     });
 
-    it('should save API key and reload', async () => {
+    it('should show connection info and reload', async () => {
         render(<ApiConnectionSettings />);
         
-        const keyInput = screen.getByTestId('api-key-input');
-        fireEvent.change(keyInput, { target: { value: 'secret-key' } });
+        expect(screen.getByText(/로컬 API 서버와 연동/i)).toBeDefined();
         
         const saveBtn = screen.getByText(/저장 후 새로고침/i);
         fireEvent.click(saveBtn);
         
-        expect(localStorage.getItem('skimbleshanks_api_key')).toBe('secret-key');
         expect(mockShowToast).toHaveBeenCalledWith(expect.stringContaining('설정이 저장'), 'success');
         
         vi.advanceTimersByTime(1000);
