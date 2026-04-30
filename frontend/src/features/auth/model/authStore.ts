@@ -16,6 +16,7 @@ interface AuthStore {
     showTgGuide: boolean;
     setTgField: (field: string, value: any) => void;
     saveTelegramSettings: () => Promise<void>;
+    clearTelegramSettings: () => void;
 }
 
 export const useAuthStore = create<AuthStore>((set, get) => ({
@@ -81,5 +82,8 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         } catch (e) {
             console.error('Failed to save telegram settings', e);
         }
+    },
+    clearTelegramSettings: () => {
+        set({ tgToken: '', tgChatId: '' });
     }
 }));

@@ -1,12 +1,19 @@
-import { Send, Info } from 'lucide-react';
+import { Send, Info, Trash2 } from 'lucide-react';
 import { useAuthStore } from '../../auth/model/authStore';
 import { useUiStore } from '../../../shared/api/uiStore';
 
 export function TelegramSettings() {
     const { 
-        tgToken, tgChatId, showTgGuide, setTgField, saveTelegramSettings 
+        tgToken, tgChatId, showTgGuide, setTgField, saveTelegramSettings, clearTelegramSettings 
     } = useAuthStore();
     const { showToast } = useUiStore();
+
+    const handleClear = () => {
+        if (confirm('브라우저에 표시된 텔레그램 설정을 지울까요?')) {
+            clearTelegramSettings();
+            showToast('입력값이 초기화되었습니다.', 'success');
+        }
+    };
 
     const handleTgSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -20,9 +27,29 @@ export function TelegramSettings() {
                 <h3 style={{display: 'flex', alignItems: 'center', gap: '0.8rem', margin: 0, fontSize: '1.2rem', color: 'var(--primary)'}}>
                     <Send size={20} /> 텔레그램 알림 설정
                 </h3>
-                <button onClick={() => setTgField('showTgGuide', !showTgGuide)} className="swap-btn" style={{width: 'auto', height: 'auto', padding: '0.4rem 0.8rem', borderRadius: '2rem', fontSize: '0.8rem'}}>
-                    {showTgGuide ? '가이드 닫기' : '도움말'}
-                </button>
+                <div style={{display: 'flex', gap: '0.5rem'}}>
+                    <button 
+                        onClick={handleClear}
+                        title="입력값 초기화"
+                        style={{
+                            background: 'rgba(255, 255, 255, 0.05)',
+                            border: 'none',
+                            color: 'var(--text-muted)',
+                            cursor: 'pointer',
+                            padding: '0.4rem',
+                            borderRadius: '0.5rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                        }}
+                        onMouseOver={e => e.currentTarget.style.color = '#ff4d4d'}
+                        onMouseOut={e => e.currentTarget.style.color = 'var(--text-muted)'}
+                    >
+                        <Trash2 size={16} />
+                    </button>
+                    <button onClick={() => setTgField('showTgGuide', !showTgGuide)} className="swap-btn" style={{width: 'auto', height: 'auto', padding: '0.4rem 0.8rem', borderRadius: '2rem', fontSize: '0.8rem'}}>
+                        {showTgGuide ? '가이드 닫기' : '도움말'}
+                    </button>
+                </div>
             </div>
 
             {showTgGuide && (

@@ -1,17 +1,47 @@
-import { CreditCard } from 'lucide-react';
+import { CreditCard, Trash2 } from 'lucide-react';
 import { useRailStore } from '../../reservation/model/railStore';
+import { useUiStore } from '../../../shared/api/uiStore';
 
 export function CardSettings() {
     const { 
         cardNum, cardPw, cardBirth, cardExp,
-        setCardField 
+        setCardField, clearCardInfo 
     } = useRailStore();
+    const { showToast } = useUiStore();
+
+    const handleClear = () => {
+        if (confirm('브라우저에 저장된 카드 정보를 삭제할까요?')) {
+            clearCardInfo();
+            showToast('카드 정보가 삭제되었습니다.', 'success');
+        }
+    };
 
     return (
         <div className="glass" style={{padding: '2rem'}}>
-            <h3 style={{display: 'flex', alignItems: 'center', gap: '0.8rem', marginBottom: '1rem', fontSize: '1.2rem', color: 'var(--primary)'}}>
-                <CreditCard size={20} /> 자동 결제 카드 정보
-            </h3>
+            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem'}}>
+                <h3 style={{display: 'flex', alignItems: 'center', gap: '0.8rem', margin: 0, fontSize: '1.2rem', color: 'var(--primary)'}}>
+                    <CreditCard size={20} /> 자동 결제 카드 정보
+                </h3>
+                <button 
+                    onClick={handleClear}
+                    title="정보 삭제"
+                    style={{
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        border: 'none',
+                        color: 'var(--text-muted)',
+                        cursor: 'pointer',
+                        padding: '0.5rem',
+                        borderRadius: '0.5rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        transition: 'all 0.2s'
+                    }}
+                    onMouseOver={e => e.currentTarget.style.color = '#ff4d4d'}
+                    onMouseOut={e => e.currentTarget.style.color = 'var(--text-muted)'}
+                >
+                    <Trash2 size={16} />
+                </button>
+            </div>
             <p style={{fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1.5rem', lineHeight: '1.5'}}>
                 정보를 입력하면 예매 성공 시 즉시 결제가 진행됩니다. <br/>
                 결제 실패 시 예매가 취소될 수 있으니 정확한 정보를 입력해주세요.

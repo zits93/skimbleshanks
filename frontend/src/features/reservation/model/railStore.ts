@@ -30,6 +30,7 @@ interface RailStore {
     // Setters
     setSearchField: (field: string, value: any) => void;
     setCardField: (field: string, value: any) => void;
+    clearCardInfo: () => void;
     toggleTarget: (trainName: string, seatType: string) => void;
     bulkToggleTarget: (seatType: string) => void;
     
@@ -70,6 +71,14 @@ export const useRailStore = create<RailStore>((set, get) => ({
             const storageKey = `skimbleshanks_${field.replace(/[A-Z]/g, (l) => `_${l.toLowerCase()}`)}`;
             localStorage.setItem(storageKey, value);
         }
+    },
+
+    clearCardInfo: () => {
+        set({ cardNum: '', cardPw: '', cardBirth: '', cardExp: '' });
+        localStorage.removeItem('skimbleshanks_card_num');
+        localStorage.removeItem('skimbleshanks_card_pw');
+        localStorage.removeItem('skimbleshanks_card_birth');
+        localStorage.removeItem('skimbleshanks_card_exp');
     },
 
     toggleTarget: (trainName, seatType) => {
