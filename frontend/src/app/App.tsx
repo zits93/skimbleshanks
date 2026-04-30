@@ -31,6 +31,7 @@ function AppContent() {
     const [paws, setPaws] = useState<Paw[]>([]);
     const [steams, setSteams] = useState<Steam[]>([]);
     const steamIdRef = useRef(0);
+    const lastSteamSpawnRef = useRef(0);
 
     const trackRef = useRef<HTMLDivElement>(null);
     const catRef = useRef<HTMLDivElement>(null);
@@ -85,9 +86,13 @@ function AppContent() {
         
         // Spawn steam from cat position
         if (catRef.current && trackRef.current) {
-            const catRect = catRef.current.getBoundingClientRect();
-            const trackRect = trackRef.current.getBoundingClientRect();
-            spawnSteam(catRect.left - trackRect.left + 40, 20, directionRef.current);
+            const now = performance.now();
+            if (now - lastSteamSpawnRef.current > 150) {
+                const catRect = catRef.current.getBoundingClientRect();
+                const trackRect = trackRef.current.getBoundingClientRect();
+                spawnSteam(catRect.left - trackRect.left + 40, 20, directionRef.current);
+                lastSteamSpawnRef.current = now;
+            }
         }
 
         if (framesRef.current) {
@@ -127,9 +132,9 @@ function AppContent() {
             boostRef.current *= 0.96;
             if (boostRef.current < 0.1) boostRef.current = 0;
 
-            const currentFPS = 14 + Math.sin(time / 1200) * 10 + Math.sin(time / 500) * 4 + boostRef.current;
-            const catSpeed = currentFPS * 18.0;
-            const trackSpeed = 140;
+            const currentFPS = 12 + Math.sin(time / 1200) * 8 + Math.sin(time / 500) * 3 + boostRef.current;
+            const catSpeed = currentFPS * 11.0;
+            const trackSpeed = 85;
             
             const velocity = directionRef.current === 1 ? (catSpeed - trackSpeed) : (-catSpeed - trackSpeed);
             position += velocity * dt;
@@ -140,13 +145,23 @@ function AppContent() {
             
             if (position < minPos) { 
                 position = minPos; 
-                directionRef.current = 1; 
-                spawnSteam(position + 40, 20, directionRef.current);
+                if (directionRef.current === -1) {
+                    directionRef.current = 1; 
+                    if (time - lastSteamSpawnRef.current > 300) {
+                        spawnSteam(position + 40, 20, directionRef.current);
+                        lastSteamSpawnRef.current = time;
+                    }
+                }
             }
             if (position > maxPos) { 
                 position = maxPos; 
-                directionRef.current = -1; 
-                spawnSteam(position + 40, 20, directionRef.current);
+                if (directionRef.current === 1) {
+                    directionRef.current = -1; 
+                    if (time - lastSteamSpawnRef.current > 300) {
+                        spawnSteam(position + 40, 20, directionRef.current);
+                        lastSteamSpawnRef.current = time;
+                    }
+                }
             }
             
             frameAcc += currentFPS * dt;
