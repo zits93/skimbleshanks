@@ -16,11 +16,21 @@ interface Paw {
     rotate: number;
 }
 
+interface Steam {
+    id: number;
+    x: number;
+    y: number;
+    vx: number;
+    scale: number;
+}
+
 function AppContent() {
     const { isLoggedIn, checkConfig } = useAuthStore();
     const navigate = useNavigate();
     const location = useLocation();
     const [paws, setPaws] = useState<Paw[]>([]);
+    const [steams, setSteams] = useState<Steam[]>([]);
+    const steamIdRef = useRef(0);
 
     const trackRef = useRef<HTMLDivElement>(null);
     const catRef = useRef<HTMLDivElement>(null);
@@ -55,9 +65,31 @@ function AppContent() {
         }, 1000);
     };
 
+    const spawnSteam = (x: number, y: number, dir: number) => {
+        const newSteams: Steam[] = Array.from({ length: 3 }).map((_) => ({
+            id: ++steamIdRef.current,
+            x: x + (Math.random() - 0.5) * 20,
+            y: y + (Math.random() - 0.5) * 20,
+            vx: -dir * (Math.random() * 100 + 50),
+            scale: Math.random() * 0.5 + 0.5
+        }));
+        setSteams(prev => [...prev, ...newSteams]);
+        setTimeout(() => {
+            setSteams(prev => prev.filter(s => !newSteams.find(ns => ns.id === s.id)));
+        }, 800);
+    };
+
     const handleCatClick = () => {
         boostRef.current = 40;
         directionRef.current *= -1;
+        
+        // Spawn steam from cat position
+        if (catRef.current && trackRef.current) {
+            const catRect = catRef.current.getBoundingClientRect();
+            const trackRect = trackRef.current.getBoundingClientRect();
+            spawnSteam(catRect.left - trackRect.left + 40, 20, directionRef.current);
+        }
+
         if (framesRef.current) {
             framesRef.current.style.transition = 'none';
             framesRef.current.style.transform = `scale(1.3) rotate(-10deg) scaleX(${directionRef.current})`;
@@ -106,8 +138,16 @@ function AppContent() {
             const minPos = -40;
             const maxPos = trackWidth - 80; 
             
-            if (position < minPos) { position = minPos; directionRef.current = 1; }
-            if (position > maxPos) { position = maxPos; directionRef.current = -1; }
+            if (position < minPos) { 
+                position = minPos; 
+                directionRef.current = 1; 
+                spawnSteam(position + 40, 20, directionRef.current);
+            }
+            if (position > maxPos) { 
+                position = maxPos; 
+                directionRef.current = -1; 
+                spawnSteam(position + 40, 20, directionRef.current);
+            }
             
             frameAcc += currentFPS * dt;
             const frameIndex = Math.floor(frameAcc) % 5;
@@ -166,6 +206,26 @@ function AppContent() {
                     <div className="cat-runner" ref={catRef} onClick={handleCatClick} style={{ cursor: 'pointer' }}>
                         <div className="cat-runner-frames" ref={framesRef} style={{ transition: 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)' }}></div>
                     </div>
+                    <AnimatePresence>
+                        {steams.map(s => (
+                            <motion.div
+                                key={s.id}
+                                initial={{ opacity: 0.8, scale: 0.2, x: s.x, y: s.y }}
+                                animate={{ opacity: 0, scale: 2, x: s.x + s.vx, y: s.y - 40 }}
+                                transition={{ duration: 0.8, ease: "easeOut" }}
+                                style={{
+                                    position: 'absolute',
+                                    width: '30px',
+                                    height: '30px',
+                                    background: 'rgba(255,255,255,0.4)',
+                                    borderRadius: '50%',
+                                    filter: 'blur(8px)',
+                                    pointerEvents: 'none',
+                                    zIndex: 1
+                                }}
+                            />
+                        ))}
+                    </AnimatePresence>
                 </div>
             </header>
 
