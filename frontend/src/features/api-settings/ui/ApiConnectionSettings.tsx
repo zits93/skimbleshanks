@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { Server, Save, Key } from 'lucide-react';
+import { Server, Save } from 'lucide-react';
 import { useUiStore } from '../../../shared/api/uiStore';
 
 export function ApiConnectionSettings() {
