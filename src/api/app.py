@@ -105,11 +105,14 @@ async def do_login(req: LoginRequest):
 async def get_config():
     srt_id, _ = config_store.get_login_values("SRT")
     ktx_id, _ = config_store.get_login_values("KTX")
+    tg_token, tg_chat_id = config_store.get_telegram_credentials()
     return {
         "srt_logged_in": config_store.has_login("SRT"),
         "ktx_logged_in": config_store.has_login("KTX"),
         "srt_user_id": srt_id,
         "ktx_user_id": ktx_id,
+        "telegram_token": tg_token,
+        "telegram_chat_id": tg_chat_id,
     }
 
 @app.get("/api/stations/{provider}")

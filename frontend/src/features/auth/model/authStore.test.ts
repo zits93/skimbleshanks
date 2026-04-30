@@ -69,7 +69,7 @@ describe('useAuthStore', () => {
         await saveTelegramSettings();
 
         expect(fetch).toHaveBeenCalledWith(
-            expect.stringContaining('/config/telegram'),
+            expect.stringContaining('/telegram'),
             expect.objectContaining({
                 method: 'POST',
                 body: JSON.stringify({ token: 'token123', chat_id: 'chat456' })

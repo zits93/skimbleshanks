@@ -71,7 +71,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     saveTelegramSettings: async () => {
         const { tgToken, tgChatId } = get();
         try {
-            const res = await apiFetch('/config/telegram', {
+            const res = await apiFetch('/telegram', {
                 method: 'POST',
                 body: JSON.stringify({ token: tgToken, chat_id: tgChatId })
             });
