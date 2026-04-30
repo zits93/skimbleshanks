@@ -21,7 +21,7 @@ We aim to acknowledge receipt of your report within 48 hours and provide a fix o
 
 ## Best Practices for Users
 
-- **API Key Security**: Always set a strong, unique `SKIMBLE_API_KEY`. Never share this key with anyone.
+- **Personal Data Security**: Your rail credentials and card information are stored securely using the project's configuration system.
 - **Card Information**: The Web GUI stores card information only in your browser's `localStorage`. However, we recommend clearing your browser cache if you are using a public or shared computer.
 - **Backend Access**: If you host the backend server on the internet, ensure you use HTTPS (e.g., via a proxy like Nginx or cloud services) to protect your credentials during transit.
 - **Updates**: Always use the latest version of Skimbleshanks to ensure you have the latest security patches.

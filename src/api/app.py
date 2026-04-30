@@ -14,10 +14,9 @@ from src.adapters.rail import login_client, is_seat_available, SeatType
 
 app = FastAPI(title="Skimbleshanks API")
 
-# Simple API Key from environment variable or default
-API_KEY = os.getenv("SKIMBLE_API_KEY")
+# No API Key authentication for simpler local use
 
-ALLOWED_ORIGINS_RAW = os.getenv("SKIMBLE_ALLOWED_ORIGINS", "http://localhost:5173,http://localhost:8080")
+ALLOWED_ORIGINS_RAW = os.getenv("SKIMBLE_ALLOWED_ORIGINS", "https://zits93.github.io,http://localhost:5173,http://localhost:3000")
 if ALLOWED_ORIGINS_RAW == "*":
     ALLOWED_ORIGINS = ["*"]
 else:
@@ -31,13 +30,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-async def verify_api_key(x_api_key: Optional[str] = Header(None)):
-    if not API_KEY:
-        logger.error("SKIMBLE_API_KEY is not set in environment variables.")
-        raise HTTPException(status_code=500, detail="API Key configuration error")
-    if x_api_key != API_KEY:
-        raise HTTPException(status_code=403, detail="Invalid or missing API Key")
-    return x_api_key
 
 class LoginRequest(BaseModel):
     user_id: str
@@ -60,7 +52,7 @@ class TelegramRequest(BaseModel):
     token: str
     chat_id: str
 
-@app.post("/api/telegram", dependencies=[Depends(verify_api_key)])
+@app.post("/api/telegram")
 async def set_telegram(req: TelegramRequest):
     from src.services.notifications import configure_telegram
     success = await run_in_threadpool(configure_telegram, req.token, req.chat_id)
@@ -92,7 +84,7 @@ async def _login(provider: str = "SRT"):
         logger.error(f"Auto-login failed for {provider}: {str(e)}")
         return None
 
-@app.post("/api/login", dependencies=[Depends(verify_api_key)])
+@app.post("/api/login")
 async def do_login(req: LoginRequest):
     logger.info(f"Login attempt for {req.provider} user: {req.user_id}")
     config_store.save_login(req.provider, req.user_id, req.password)
@@ -109,7 +101,7 @@ async def do_login(req: LoginRequest):
         raise HTTPException(status_code=401, detail="Login failed")
     return {"message": "Login successful"}
 
-@app.get("/api/config", dependencies=[Depends(verify_api_key)])
+@app.get("/api/config")
 async def get_config():
     srt_id, _ = config_store.get_login_values("SRT")
     ktx_id, _ = config_store.get_login_values("KTX")
@@ -120,7 +112,7 @@ async def get_config():
         "ktx_user_id": ktx_id,
     }
 
-@app.get("/api/stations/{provider}", dependencies=[Depends(verify_api_key)])
+@app.get("/api/stations/{provider}")
 async def get_stations(provider: str):
     if provider == "SRT":
         from src.providers.srt import STATION_CODE
@@ -135,7 +127,7 @@ async def get_stations(provider: str):
         return {"stations": sorted(KTX_STATIONS)}
     return {"stations": []}
 
-@app.post("/api/search", dependencies=[Depends(verify_api_key)])
+@app.post("/api/search")
 async def search_trains(req: SearchRequest):
     rail = await _login(provider=req.provider)
     if not rail or (hasattr(rail, 'is_login') and not rail.is_login) or (hasattr(rail, 'logined') and not rail.logined):
@@ -171,7 +163,7 @@ async def search_trains(req: SearchRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/api/reserve", dependencies=[Depends(verify_api_key)])
+@app.post("/api/reserve")
 async def reserve_train(req: ReserveRequest):
     rail = await _login(provider=req.provider)
     if not rail or (hasattr(rail, 'is_login') and not rail.is_login) or (hasattr(rail, 'logined') and not rail.logined):

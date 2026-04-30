@@ -17,17 +17,9 @@ describe('apiFetch', () => {
             expect.stringContaining('/api/test'),
             expect.objectContaining({
                 headers: expect.objectContaining({
-                    'X-API-KEY': 'your-secret-key',
                     'Content-Type': 'application/json'
                 })
             })
         );
-    });
-
-    it('should use custom API key from localStorage', async () => {
-        localStorage.setItem('skimbleshanks_api_key', 'my-custom-key');
-        // Note: API_KEY is evaluated at module load time in the current api.ts
-        // This test might fail if the module is already loaded.
-        // We might need to rethink how constants are handled in api.ts for better testability.
     });
 });

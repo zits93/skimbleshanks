@@ -14,15 +14,13 @@
 
    | 환경 변수 | 설명 | 기본값 |
    | :--- | :--- | :--- |
-   | `SKIMBLE_API_KEY` | API 호출 시 필요한 인증 키 (헤더 `X-API-KEY`) | `your-secret-key` |
-   | `SKIMBLE_ALLOWED_ORIGINS` | CORS 허용 도메인. 모든 허용 시 `*` 입력 | `http://localhost:5173` |
+   | `SKIMBLE_ALLOWED_ORIGINS` | CORS 허용 오리진 (쉼표로 구분, 모든 허용 시 `*`) | `https://zits93.github.io` |
 
 ## 🚀 백엔드 서버 실행 (Backend Execution)
 
 설정이 완료되었다면 서버를 구동합니다. 기본 포트는 `8000`입니다.
 
 ```bash
-export SKIMBLE_API_KEY=your-secret-key
 export SKIMBLE_ALLOWED_ORIGINS="*"
 uvicorn src.api.app:app --host 0.0.0.0 --port 8000
 ```

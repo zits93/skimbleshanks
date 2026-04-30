@@ -10,9 +10,7 @@ def run():
     
     # Set default API Key for dev if not present
     env = os.environ.copy()
-    if "SKIMBLE_API_KEY" not in env:
-        env["SKIMBLE_API_KEY"] = "your-secret-key"
-        print("💡 SKIMBLE_API_KEY not set. Using default: 'your-secret-key'")
+    # SKIMBLE_API_KEY check removed as it's no longer used for authentication
 
     # 1. Start FastAPI Backend
     backend_cmd = [sys.executable, "-m", "uvicorn", "src.api.app:app", "--host", "127.0.0.1", "--port", "8000"]

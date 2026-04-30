@@ -4,10 +4,8 @@ import { useUiStore } from '../../../shared/api/uiStore';
 
 export function ApiConnectionSettings() {
     const { showToast } = useUiStore();
-    const [apiKey, setApiKey] = useState(localStorage.getItem('skimbleshanks_api_key') || 'your-secret-key');
 
     const handleSave = () => {
-        localStorage.setItem('skimbleshanks_api_key', apiKey);
         showToast('설정이 저장되었습니다. 반영을 위해 새로고침합니다.', 'success');
         setTimeout(() => window.location.reload(), 1000);
     };
@@ -16,7 +14,7 @@ export function ApiConnectionSettings() {
         <div className="glass" style={{padding: '2.5rem'}}>
             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem'}}>
                 <h3 style={{display: 'flex', alignItems: 'center', gap: '0.8rem', fontSize: '1.25rem', color: 'var(--primary)', fontWeight: 800}}>
-                    <Server size={22} /> API 인증 설정
+                    <Server size={22} /> API 연결 설정
                 </h3>
                 <button 
                     onClick={handleSave}
@@ -40,23 +38,10 @@ export function ApiConnectionSettings() {
             </div>
 
             <div style={{display: 'flex', flexDirection: 'column', gap: '1.2rem'}}>
-                <div className="input-group" style={{marginBottom: 0}}>
-                    <label style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
-                        <Key size={14} /> API 인증 키 (X-API-KEY)
-                    </label>
-                    <input 
-                        type="password" 
-                        value={apiKey} 
-                        onChange={e => setApiKey(e.target.value)} 
-                        placeholder="인증 키를 입력하세요"
-                        style={{padding: '0.9rem 1.1rem', fontSize: '0.95rem'}}
-                        data-testid="api-key-input"
-                    />
+                <div style={{ fontSize: '0.9rem', opacity: 0.8, textAlign: 'center', padding: '1rem', background: 'rgba(255,255,255,0.05)', borderRadius: '0.8rem' }}>
+                    현재 로컬 API 서버와 연동되어 있습니다.<br/>
+                    별도의 인증 키가 필요하지 않은 환경입니다.
                 </div>
-            </div>
-            
-            <div style={{ fontSize: '0.75rem', opacity: 0.5, marginTop: '1.2rem', textAlign: 'center', lineHeight: 1.4 }}>
-                🔒 입력하신 API 키 정보는 브라우저에 저장되며,<br/>서버 데이터베이스에는 저장되지 않습니다.
             </div>
         </div>
     );
