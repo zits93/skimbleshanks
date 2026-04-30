@@ -7,8 +7,6 @@ import { useUiStore } from '../../../shared/api/uiStore';
 // Mock lucide-react
 vi.mock('lucide-react', () => ({
     User: () => <div data-testid="icon-user" />,
-    Terminal: () => <div data-testid="icon-terminal" />,
-    Server: () => <div data-testid="icon-server" />
 }));
 
 vi.mock('../../../features/auth/model/authStore', () => ({
@@ -17,11 +15,6 @@ vi.mock('../../../features/auth/model/authStore', () => ({
 
 vi.mock('../../../shared/api/uiStore', () => ({
     useUiStore: vi.fn()
-}));
-
-// Mock child component
-vi.mock('../../../features/api-settings/ui/ApiConnectionSettings', () => ({
-    ApiConnectionSettings: () => <div data-testid="api-settings">Api Settings</div>
 }));
 
 describe('LoginPage', () => {
@@ -64,13 +57,5 @@ describe('LoginPage', () => {
 
         expect(mockSetUserId).toHaveBeenCalledWith('user1');
         expect(mockLogin).toHaveBeenCalledWith('pass1', 'SRT');
-    });
-
-    it('should toggle developer mode', () => {
-        render(<LoginPage />);
-        const devCheckbox = screen.getByRole('checkbox');
-        
-        fireEvent.click(devCheckbox);
-        expect(screen.getByTestId('api-settings')).toBeDefined();
     });
 });

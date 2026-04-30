@@ -2,13 +2,11 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '../../../features/auth/model/authStore';
 import { useUiStore } from '../../../shared/api/uiStore';
-import { ApiConnectionSettings } from '../../../features/api-settings/ui/ApiConnectionSettings';
-import { User, Terminal } from 'lucide-react';
+import { User } from 'lucide-react';
 import '../../../app/style.css';
 
 export default function LoginPage() {
     const [password, setPassword] = useState('');
-    const [devMode, setDevMode] = useState(false);
     const { userId, setUserId, login, loading } = useAuthStore();
     const { showToast } = useUiStore();
 
@@ -47,23 +45,6 @@ export default function LoginPage() {
                     </div>
                 </form>
             </div>
-            
-            <div className="glass" style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 2rem', opacity: 0.8 }}>
-                <span style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center' }}>
-                    <Terminal />
-                    개발자 설정 (API)
-                </span>
-                <label className="switch">
-                    <input type="checkbox" checked={devMode} onChange={e => setDevMode(e.target.checked)} />
-                    <span className="slider round"></span>
-                </label>
-            </div>
-
-            {devMode && (
-                <div style={{ marginTop: '1.5rem' }}>
-                    <ApiConnectionSettings />
-                </div>
-            )}
         </motion.div>
     );
 }
